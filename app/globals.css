@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  /* KingBoostFarms palette */
+  --color-kb-green: #2E7D32;
+  --color-kb-green-dark: #1F5A24;
+  --color-kb-gold: #D4AF37;
+  --color-kb-gold-dark: #B8952C;
+  --color-kb-charcoal: #333333;
+  --color-kb-cream: #FAF8F3;
+
+  --background: #FFFFFF;
+  --foreground: var(--color-kb-charcoal);
+}
+
+@theme inline {
+  --color-kb-green: var(--color-kb-green);
+  --color-kb-green-dark: var(--color-kb-green-dark);
+  --color-kb-gold: var(--color-kb-gold);
+  --color-kb-gold-dark: var(--color-kb-gold-dark);
+  --color-kb-charcoal: var(--color-kb-charcoal);
+  --color-kb-cream: var(--color-kb-cream);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-display: var(--font-montserrat);
+  --font-body: var(--font-opensans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
