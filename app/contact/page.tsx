@@ -51,8 +51,8 @@ export default function ContactPage() {
         </p>
         <p className="flex items-center gap-2">
           <Mail size={16} className="text-kb-green shrink-0" />
-          <a href="mailto:info@kingboostfarms.com" className="hover:text-kb-green">
-            info@kingboostfarms.com
+          <a href="mailto:kingboost.africa@gmail.com" className="hover:text-kb-green">
+            kingboost.africa@gmail.com
           </a>
         </p>
       </div>
