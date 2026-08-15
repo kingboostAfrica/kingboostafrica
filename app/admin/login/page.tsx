@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
       return;
     }
 
- 
+    window.location.href = "/admin";
   }
 
   return (
@@ -36,7 +36,6 @@ export default function AdminLoginPage() {
       <p className="text-kb-charcoal/60 mb-8">
         Log in to manage KingBoostFarms content.
       </p>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-kb-charcoal mb-1">Email</label>
@@ -58,9 +57,7 @@ export default function AdminLoginPage() {
             className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
           />
         </div>
-
         {error && <p className="text-sm text-red-600">{error}</p>}
-
         <button
           type="submit"
           disabled={loading}
