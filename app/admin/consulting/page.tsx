@@ -1,17 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin";
 import type { ConsultingService } from "@/lib/types";
 import ToggleActiveButton from "@/components/ToggleActiveButton";
 
 export default async function AdminConsultingPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/admin/login");
+  const { supabase } = await requireAdmin();
 
   const { data: services } = await supabase
     .from("consulting_services")
