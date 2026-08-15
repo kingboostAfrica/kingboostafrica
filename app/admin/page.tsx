@@ -1,16 +1,10 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin";
 import { Package, BookOpen, Briefcase, Inbox } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 
 export default async function AdminDashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/admin/login");
+  const { supabase } = await requireAdmin();
 
   const [{ count: productCount }, { count: courseCount }, { count: serviceCount }, { count: messageCount }] =
     await Promise.all([
