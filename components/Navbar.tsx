@@ -3,20 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Menu, X, ShoppingBasket } from "lucide-react";
+import { Menu, X, ShoppingBasket, ChevronDown } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
-const links = [
+const services = [
   { href: "/food-mart", label: "Food Mart" },
   { href: "/academy", label: "Academy" },
   { href: "/consulting", label: "Consulting" },
   { href: "/agritech", label: "Agritech" },
   { href: "/organics", label: "Organics" },
-  { href: "/about", label: "About" },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const { count } = useCart();
 
   return (
@@ -37,15 +38,47 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-7">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-sm font-medium text-kb-charcoal hover:text-kb-green transition-colors"
+          <div
+            className="relative"
+            onMouseEnter={() => setServicesOpen(true)}
+            onMouseLeave={() => setServicesOpen(false)}
+          >
+            <button
+              className="flex items-center gap-1 text-sm font-medium text-kb-charcoal hover:text-kb-green transition-colors"
+              onClick={() => setServicesOpen((v) => !v)}
+              aria-expanded={servicesOpen}
             >
-              {l.label}
-            </Link>
-          ))}
+              Services
+              <ChevronDown
+                size={14}
+                className={`transition-transform ${servicesOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {servicesOpen && (
+              <div className="absolute top-full left-0 pt-3 w-56">
+                <div className="bg-white border border-kb-green/15 rounded-xl shadow-lg py-2">
+                  {services.map((s) => (
+                    <Link
+                      key={s.href}
+                      href={s.href}
+                      className="block px-4 py-2.5 text-sm font-medium text-kb-charcoal hover:bg-kb-green/5 hover:text-kb-green transition-colors"
+                      onClick={() => setServicesOpen(false)}
+                    >
+                      {s.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Link
+            href="/about"
+            className="text-sm font-medium text-kb-charcoal hover:text-kb-green transition-colors"
+          >
+            About
+          </Link>
         </nav>
 
         <div className="hidden lg:flex items-center gap-4">
@@ -80,23 +113,50 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <nav className="lg:hidden border-t border-kb-green/15 bg-white px-5 py-4 flex flex-col gap-4">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-sm font-medium text-kb-charcoal hover:text-kb-green"
-              onClick={() => setOpen(false)}
-            >
-              {l.label}
-            </Link>
-          ))}
-          <Link href="/cart" className="text-sm font-medium text-kb-charcoal hover:text-kb-green" onClick={() => setOpen(false)}>
+        <nav className="lg:hidden border-t border-kb-green/15 bg-white px-5 py-4 flex flex-col gap-1">
+          <button
+            className="flex items-center justify-between text-sm font-medium text-kb-charcoal hover:text-kb-green py-2"
+            onClick={() => setMobileServicesOpen((v) => !v)}
+            aria-expanded={mobileServicesOpen}
+          >
+            Services
+            <ChevronDown
+              size={16}
+              className={`transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          {mobileServicesOpen && (
+            <div className="pl-4 flex flex-col gap-3 pb-2">
+              {services.map((s) => (
+                <Link
+                  key={s.href}
+                  href={s.href}
+                  className="text-sm text-kb-charcoal/80 hover:text-kb-green"
+                  onClick={() => setOpen(false)}
+                >
+                  {s.label}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <Link
+            href="/about"
+            className="text-sm font-medium text-kb-charcoal hover:text-kb-green py-2"
+            onClick={() => setOpen(false)}
+          >
+            About
+          </Link>
+          <Link
+            href="/cart"
+            className="text-sm font-medium text-kb-charcoal hover:text-kb-green py-2"
+            onClick={() => setOpen(false)}
+          >
             Cart
           </Link>
           <Link
             href="/contact"
-            className="text-sm font-medium px-4 py-2 bg-kb-green text-white rounded-full text-center"
+            className="text-sm font-medium px-4 py-2.5 bg-kb-green text-white rounded-full text-center mt-2"
             onClick={() => setOpen(false)}
           >
             Contact Us
