@@ -32,7 +32,6 @@ export default function Footer() {
             <li><Link href="/contact" className="hover:text-kb-gold">Contact Us</Link></li>
             <li><Link href="/privacy-policy" className="hover:text-kb-gold">Privacy Policy</Link></li>
             <li><Link href="/disclaimer" className="hover:text-kb-gold">Disclaimer</Link></li>
-            <li><Link href="/admin/login" className="hover:text-kb-gold">Admin Login</Link></li>
           </ul>
         </div>
 
@@ -40,8 +39,8 @@ export default function Footer() {
           <p className="text-sm font-semibold mb-3 text-kb-gold">Get in Touch</p>
           <ul className="space-y-2 text-sm text-white/70">
             <li>8 Ibudo Oloja Street, Igbanko, Badagry, Lagos State, Nigeria</li>
-            <li><a href="mailto:info@kingboostfarms.com" className="hover:text-kb-gold">info@kingboostfarms.com</a></li>
-            <li><a href="https://www.kingboostfarms.com" className="hover:text-kb-gold">www.kingboostfarms.com</a></li>
+            <li><a href="mailto:kingboost.africa@gmail.com" className="hover:text-kb-gold">kingboost.africa@gmail.com</a></li>
+            <li><a href="https://www.kingboostfarms.com.ng" className="hover:text-kb-gold">www.kingboostfarms.com.ng</a></li>
           </ul>
         </div>
       </div>
