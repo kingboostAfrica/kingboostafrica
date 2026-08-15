@@ -77,8 +77,8 @@ export default function DisclaimerPage() {
           <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">Contact Us</h2>
           <p>
             Questions about this Disclaimer can be sent to{" "}
-            <a href="mailto:info@kingboostfarms.com" className="text-kb-green hover:underline">
-              info@kingboostfarms.com
+            <a href="mailto:kingboost.africa@gmail.com" className="text-kb-green hover:underline">
+              kingboost.africa@gmail.com
             </a>
             .
           </p>
