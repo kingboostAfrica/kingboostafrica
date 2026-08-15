@@ -1,13 +1,18 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
     <footer className="bg-kb-charcoal text-white mt-20">
       <div className="max-w-6xl mx-auto px-5 py-12 grid grid-cols-1 sm:grid-cols-4 gap-10">
         <div>
-          <p className="font-display text-lg font-bold mb-2">
-            KingBoost<span className="text-kb-gold">Farms</span>
-          </p>
+          <Image
+            src="/logo-full.png"
+            alt="KingBoostFarms"
+            width={160}
+            height={136}
+            className="w-32 h-auto mb-3"
+          />
           <p className="text-sm text-white/70 max-w-xs">
             Growing Value. Nourishing Lives. Pure, natural, nutritious produce
             and agribusiness services across Nigeria.
