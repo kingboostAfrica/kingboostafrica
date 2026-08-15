@@ -1,16 +1,10 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin";
 import type { Enrollment, ConsultingBooking, Inquiry } from "@/lib/types";
 import { GraduationCap, Briefcase, Mail } from "lucide-react";
 
 export default async function AdminMessagesPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/admin/login");
+  const { supabase } = await requireAdmin();
 
   const [{ data: enrollments }, { data: bookings }, { data: inquiries }] = await Promise.all([
     supabase
