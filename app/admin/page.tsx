@@ -1,38 +1,38 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
-import { Package, BookOpen, Briefcase, Inbox } from "lucide-react";
-import LogoutButton from "@/components/LogoutButton";
+import { Package, BookOpen, Briefcase, Inbox, Images, FileText } from "lucide-react";
 
 export default async function AdminDashboardPage() {
   const { supabase } = await requireAdmin();
 
-  const [{ count: productCount }, { count: courseCount }, { count: serviceCount }, { count: messageCount }] =
-    await Promise.all([
-      supabase.from("products").select("*", { count: "exact", head: true }),
-      supabase.from("courses").select("*", { count: "exact", head: true }),
-      supabase.from("consulting_services").select("*", { count: "exact", head: true }),
-      supabase.from("inquiries").select("*", { count: "exact", head: true }).eq("status", "new"),
-    ]);
+  const [
+    { count: productCount },
+    { count: courseCount },
+    { count: serviceCount },
+    { count: messageCount },
+  ] = await Promise.all([
+    supabase.from("products").select("*", { count: "exact", head: true }),
+    supabase.from("courses").select("*", { count: "exact", head: true }),
+    supabase.from("consulting_services").select("*", { count: "exact", head: true }),
+    supabase.from("inquiries").select("*", { count: "exact", head: true }).eq("status", "new"),
+  ]);
 
   const cards = [
-    { href: "/admin/products", icon: Package, label: "Food Mart Products", count: productCount ?? 0 },
-    { href: "/admin/courses", icon: BookOpen, label: "Academy Courses", count: courseCount ?? 0 },
-    { href: "/admin/consulting", icon: Briefcase, label: "Consulting Services", count: serviceCount ?? 0 },
-    { href: "/admin/messages", icon: Inbox, label: "New Messages", count: messageCount ?? 0 },
+    { href: "/admin/products", icon: Package, label: "Food Mart Products", count: `${productCount ?? 0} item(s)` },
+    { href: "/admin/courses", icon: BookOpen, label: "Academy Courses", count: `${courseCount ?? 0} item(s)` },
+    { href: "/admin/consulting", icon: Briefcase, label: "Consulting Services", count: `${serviceCount ?? 0} item(s)` },
+    { href: "/admin/gallery", icon: Images, label: "Gallery Photos", count: "Manage photos" },
+    { href: "/admin/content", icon: FileText, label: "Site Content", count: "Edit page text" },
+    { href: "/admin/messages", icon: Inbox, label: "New Messages", count: `${messageCount ?? 0} unread` },
   ];
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
-      <div className="flex items-center justify-between mb-10">
-        <div>
-          <h1 className="font-display text-3xl font-bold text-kb-charcoal">
-            Admin Dashboard
-          </h1>
-          <p className="text-kb-charcoal/60 mt-1">
-            Manage KingBoostFarms content across all five verticals.
-          </p>
-        </div>
-        <LogoutButton />
+      <div className="mb-10">
+        <h1 className="font-display text-3xl font-bold text-kb-charcoal">Admin Dashboard</h1>
+        <p className="text-kb-charcoal/60 mt-1">
+          Manage KingBoostFarms content across all five verticals.
+        </p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6">
@@ -45,7 +45,7 @@ export default async function AdminDashboardPage() {
             <c.icon className="text-kb-gold-dark" size={28} />
             <div>
               <p className="font-medium text-kb-charcoal">{c.label}</p>
-              <p className="text-sm text-kb-charcoal/60">{c.count} item(s)</p>
+              <p className="text-sm text-kb-charcoal/60">{c.count}</p>
             </div>
           </Link>
         ))}
