@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Menu, X, ShoppingBasket } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
@@ -21,8 +22,18 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-kb-green/15">
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-        <Link href="/" className="font-display text-lg font-bold text-kb-green tracking-tight">
-          KingBoost<span className="text-kb-gold">Farms</span>
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Image
+            src="/logo-icon.png"
+            alt="KingBoostFarms"
+            width={40}
+            height={40}
+            priority
+            className="h-9 w-9 object-contain"
+          />
+          <span className="font-display text-lg font-bold text-kb-green tracking-tight">
+            KingBoost<span className="text-kb-gold">Farms</span>
+          </span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-7">
