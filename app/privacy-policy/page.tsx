@@ -84,8 +84,8 @@ export default function PrivacyPolicyPage() {
           <p>
             If you have questions about this Privacy Policy, please contact
             us at{" "}
-            <a href="mailto:info@kingboostfarms.com" className="text-kb-green hover:underline">
-              info@kingboostfarms.com
+            <a href="mailto:kingboost.africa@gmail.com" className="text-kb-green hover:underline">
+              kingboost.africa@gmail.com
             </a>{" "}
             or write to us at 8 Ibudo Oloja Street, Igbanko, Badagry, Lagos
             State, Nigeria.
