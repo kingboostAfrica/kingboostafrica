@@ -42,6 +42,8 @@ export interface Order {
   status: "pending" | "paid" | "shipped" | "completed" | "cancelled";
   total_amount: number;
   payment_reference: string | null;
+  payment_method?: "delivery" | "online";
+  paid_at?: string | null;
   created_at: string;
 }
 

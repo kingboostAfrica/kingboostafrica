@@ -87,6 +87,22 @@ export default async function AdminOrdersPage() {
                     <p className="text-xs text-kb-charcoal/40 mt-0.5">
                       #{o.id.slice(0, 8).toUpperCase()} · {new Date(o.created_at).toLocaleString()}
                     </p>
+                    <p className="mt-1 text-xs font-semibold">
+                      {o.payment_method === "online" ? (
+                        o.status === "pending" ? (
+                          <span className="text-kb-gold-dark">Online payment — waiting for payment</span>
+                        ) : o.status === "cancelled" ? (
+                          <span className="text-red-600">Online order — cancelled</span>
+                        ) : (
+                          <span className="text-kb-green">
+                            Paid online via Paystack
+                            {o.payment_reference ? ` (${o.payment_reference})` : ""}
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-kb-charcoal/50">Pay on delivery</span>
+                      )}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold text-kb-green">

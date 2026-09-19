@@ -13,6 +13,9 @@ import {
   sendEmail,
   type OrderLine,
 } from "@/lib/email";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { SITE_URL } from "@/lib/site";
+import { initializeTransaction, makeReference, paystackEnabled, toKobo } from "@/lib/paystack";
 
 // Places an order through the database function `place_order()`
 // (see supabase/002_hardening_and_admin.sql).
@@ -39,6 +42,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const wantsOnline = body.paymentMethod === "online";
+    if (wantsOnline && !paystackEnabled()) {
+      return NextResponse.json(
+        { error: "Online payment is not available right now. Please choose pay on delivery." },
+        { status: 400 }
+      );
+    }
+
     const rawItems: unknown = body.items;
     if (!Array.isArray(rawItems) || rawItems.length === 0 || rawItems.length > 50) {
       return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
@@ -59,6 +70,15 @@ export async function POST(request: Request) {
       )
     ) {
       return NextResponse.json({ error: "Your cart has an invalid item." }, { status: 400 });
+    }
+
+    // Housekeeping: unpaid online orders older than 3 hours release their stock.
+    if (paystackEnabled()) {
+      try {
+        await createAdminClient()?.rpc("release_stale_online_orders", { p_hours: 3 });
+      } catch (err) {
+        console.error("Stale order release failed:", err);
+      }
     }
 
     const supabase = await createClient();
@@ -82,6 +102,42 @@ export async function POST(request: Request) {
     }
 
     const result = data as { order_id: string; total: number };
+
+    // ---- Pay online: hand the customer to Paystack. Emails are sent once payment is confirmed. ----
+    if (wantsOnline) {
+      const admin = createAdminClient();
+      const reference = makeReference(result.order_id);
+      try {
+        if (!admin) throw new Error("Server key missing");
+        const { error: tagError } = await admin
+          .from("orders")
+          .update({ payment_method: "online", payment_reference: reference })
+          .eq("id", result.order_id);
+        if (tagError) throw tagError;
+
+        const site = process.env.SITE_URL || SITE_URL;
+        const authorizationUrl = await initializeTransaction({
+          email: buyerEmail,
+          amountKobo: toKobo(Number(result.total)),
+          reference,
+          callbackUrl: `${site}/checkout/success?order=${encodeURIComponent(result.order_id)}`,
+          orderId: result.order_id,
+        });
+        return NextResponse.json({
+          orderId: result.order_id,
+          total: result.total,
+          authorizationUrl,
+        });
+      } catch (payErr) {
+        // Could not start payment: cancel the order so the stock goes straight back.
+        console.error("Paystack start error:", payErr);
+        await admin?.from("orders").update({ status: "cancelled" }).eq("id", result.order_id);
+        return NextResponse.json(
+          { error: "We could not start the online payment. Please try again or choose pay on delivery." },
+          { status: 502 }
+        );
+      }
+    }
 
     // Email alerts are best-effort: a failure here must never fail the order.
     try {

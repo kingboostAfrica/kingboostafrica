@@ -44,12 +44,20 @@ Then, in Supabase → Authentication → Sign In / Providers, **turn off "Allow 
 | Site Content | Edit the text on Home, About, Agritech, Organics. |
 | Messages & Sign-ups | Inquiries, course enrollments, consulting bookings — mark them handled. |
 
+## Online payment (Paystack)
+
+Set `PAYSTACK_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` in Netlify and run `supabase/004_paystack_payments.sql`.
+Checkout then offers "Pay now" next to "Pay on delivery". In the Paystack dashboard set the webhook URL to
+`https://www.kingboostfarms.com.ng/api/paystack/webhook`. Payments are always re-checked with Paystack on the
+server (amount, currency, status) before an order is marked paid; unpaid online orders release their stock after 3 hours.
+
 ## How checkout works
 
 The browser sends only *which products* and *how many*. The `place_order()` database
 function looks up the real prices, checks stock, creates the order and decrements stock in one
-transaction. Payment is currently **pay on delivery**. Paystack/Flutterwave plugs in at
-`app/api/checkout/route.ts` (create order as `pending` → start payment → mark `paid` from a webhook).
+transaction. The customer then either pays on delivery, or (when Paystack is configured) pays online:
+the server starts a Paystack payment for the exact order total, and later confirms it with Paystack
+before marking the order paid (`lib/paystack.ts`).
 
 ## Project layout
 
