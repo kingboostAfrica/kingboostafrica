@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ContentRow } from "@/lib/content";
+import { ImageUploader } from "@/components/admin/ui";
 
 export default function ContentEditor({
   initialRows,
@@ -13,6 +14,7 @@ export default function ContentEditor({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   function update(id: string, field: "title" | "body" | "icon" | "image_url", value: string) {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
@@ -46,6 +48,8 @@ export default function ContentEditor({
           .filter((r) => r.section === section)
           .sort((a, b) => a.sort_order - b.sort_order);
         const showIcon = section !== "hero" && section !== "intro";
+        // Only the homepage hero has a photo slot today.
+        const showImage = section === "hero";
 
         return (
           <div key={section}>
@@ -93,17 +97,23 @@ export default function ContentEditor({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-kb-charcoal/60 mb-1">
-                      Image URL (optional)
-                    </label>
-                    <input
-                      value={row.image_url ?? ""}
-                      onChange={(e) => update(row.id, "image_url", e.target.value)}
-                      placeholder="https://..."
-                      className="w-full border border-kb-green/30 rounded-lg px-3 py-2 text-sm"
-                    />
-                  </div>
+                  {showImage && (
+                    <div>
+                      <label className="block text-xs font-medium text-kb-charcoal/60 mb-1">
+                        Hero photo (optional)
+                      </label>
+                      <ImageUploader
+                        value={row.image_url ? [row.image_url] : []}
+                        onChange={(urls) => update(row.id, "image_url", urls[0] ?? "")}
+                        onBusyChange={setUploading}
+                      />
+                      <p className="mt-2 text-xs text-kb-charcoal/50">
+                        Shown on laptop and desktop screens. A portrait photo (about 4 wide by 5 tall)
+                        works best. Remove it to go back to the farmland artwork. Click Save Changes
+                        below after uploading.
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -116,7 +126,7 @@ export default function ContentEditor({
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-kb-green/15 px-5 py-4 flex items-center gap-4">
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || uploading}
           className="bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save Changes"}

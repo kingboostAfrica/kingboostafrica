@@ -24,7 +24,7 @@ export async function PATCH(req: NextRequest) {
     title: r.title ?? null,
     body: r.body ?? null,
     icon: r.icon ?? null,
-    image_url: r.image_url ?? null,
+    image_url: r.image_url || null,
     updated_at: new Date().toISOString(),
   }));
 

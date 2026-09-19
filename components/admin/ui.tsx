@@ -5,6 +5,9 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import { uploadMultipleToCloudinary } from "@/lib/cloudinary";
 
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+
 export const inputCls =
   "w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white";
 
@@ -49,13 +52,22 @@ export function ImageUploader({
   const [error, setError] = useState("");
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files || []);
+    const picked = Array.from(e.target.files || []);
     e.target.value = "";
+    if (picked.length === 0) return;
+
+    // Only real web photos, and not huge ones. (Cloudinary has its own limits too.)
+    const files = picked.filter((f) => ALLOWED_TYPES.includes(f.type) && f.size <= MAX_BYTES);
+    const rejected = picked.length - files.length;
+    setError(
+      rejected > 0
+        ? `${rejected} file${rejected === 1 ? " was" : "s were"} skipped. Use JPG, PNG or WebP photos under 10 MB.`
+        : ""
+    );
     if (files.length === 0) return;
 
     setUploading(true);
     onBusyChange?.(true);
-    setError("");
     try {
       const urls = await uploadMultipleToCloudinary(files);
       onChange(multiple ? [...value, ...urls] : urls.slice(0, 1));
@@ -71,7 +83,7 @@ export function ImageUploader({
     <div>
       <input
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         multiple={multiple}
         onChange={handleChange}
         disabled={uploading}
