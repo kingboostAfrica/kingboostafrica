@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail, looksLikeBot } from "@/lib/validation";
+import { notifyOwner } from "@/lib/email";
 
 const SOURCES = ["agritech", "organics", "general"];
 
@@ -35,6 +36,15 @@ export async function POST(request: Request) {
     });
 
     if (error) throw error;
+
+    await notifyOwner(
+      `New ${source} inquiry from ${full_name}`,
+      "New website inquiry",
+      [["Topic", source], ["Name", full_name], ["Email", email], ["Phone", phone], ["Message", message]],
+      email,
+      "/admin/messages",
+      "Open messages in admin"
+    );
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Inquiry submission error:", err);

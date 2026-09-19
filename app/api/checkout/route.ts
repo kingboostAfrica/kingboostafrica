@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail } from "@/lib/validation";
+import {
+  adminUrl,
+  canEmailCustomers,
+  detailRows,
+  emailLayout,
+  escapeHtml,
+  naira,
+  notifyAddress,
+  orderTable,
+  sendEmail,
+  type OrderLine,
+} from "@/lib/email";
 
 // Places an order through the database function `place_order()`
 // (see supabase/002_hardening_and_admin.sql).
@@ -70,6 +82,23 @@ export async function POST(request: Request) {
     }
 
     const result = data as { order_id: string; total: number };
+
+    // Email alerts are best-effort: a failure here must never fail the order.
+    try {
+      await sendOrderEmails({
+        supabase,
+        orderId: result.order_id,
+        total: Number(result.total),
+        buyerName,
+        buyerEmail,
+        buyerPhone,
+        deliveryAddress,
+        items: items as { product_id: string; quantity: number }[],
+      });
+    } catch (mailErr) {
+      console.error("Order email error:", mailErr);
+    }
+
     return NextResponse.json({ orderId: result.order_id, total: result.total });
   } catch (err) {
     console.error("Checkout error:", err);
@@ -77,5 +106,66 @@ export async function POST(request: Request) {
       { error: "Something went wrong placing your order. Please try again." },
       { status: 500 }
     );
+  }
+}
+
+async function sendOrderEmails(o: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  orderId: string;
+  total: number;
+  buyerName: string;
+  buyerEmail: string;
+  buyerPhone: string;
+  deliveryAddress: string;
+  items: { product_id: string; quantity: number }[];
+}) {
+  if (!process.env.RESEND_API_KEY) return; // emails not set up yet
+
+  // Product names/prices are public, so read them back to describe the order.
+  const ids = Array.from(new Set(o.items.map((i) => i.product_id)));
+  const { data: products } = await o.supabase
+    .from("products")
+    .select("id, name, unit, price")
+    .in("id", ids);
+  const byId = new Map(
+    ((products as { id: string; name: string; unit: string; price: number }[] | null) ?? []).map((p) => [p.id, p])
+  );
+  const lines: OrderLine[] = o.items.map((i) => {
+    const p = byId.get(i.product_id);
+    return { name: p?.name ?? "Item", unit: p?.unit ?? "", quantity: i.quantity, price: Number(p?.price ?? 0) };
+  });
+
+  const ref = o.orderId.slice(0, 8).toUpperCase();
+  const table = orderTable(lines, o.total);
+
+  // 1) Alert to the owner
+  await sendEmail({
+    to: notifyAddress(),
+    replyTo: o.buyerEmail,
+    subject: `New order #${ref} — ${naira(o.total)} (${o.buyerName})`,
+    html: emailLayout(
+      "You have a new order",
+      `${detailRows([
+        ["Order", `#${ref}`],
+        ["Customer", o.buyerName],
+        ["Phone", o.buyerPhone],
+        ["Email", o.buyerEmail],
+        ["Deliver to", o.deliveryAddress],
+      ])}<div style="height:12px"></div>${table}<p style="font-size:13px;color:#6b756f;">Payment is collected on delivery. Reply to this email to reach the customer.</p>`,
+      { label: "Open orders in admin", href: adminUrl("/admin/orders") }
+    ),
+  });
+
+  // 2) Confirmation to the customer (only once a verified sender domain is configured)
+  if (canEmailCustomers()) {
+    await sendEmail({
+      to: o.buyerEmail,
+      replyTo: notifyAddress(),
+      subject: `We received your order #${ref}`,
+      html: emailLayout(
+        `Thank you, ${o.buyerName.split(" ")[0]}!`,
+        `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">We have received your order <strong>#${ref}</strong> and will contact you shortly to confirm delivery. You pay on delivery.</p>${table}<p style="font-size:13px;color:#6b756f;">Delivering to: ${escapeHtml(o.deliveryAddress)}</p><p style="font-size:13px;color:#6b756f;">Questions? Just reply to this email.</p>`
+      ),
+    });
   }
 }

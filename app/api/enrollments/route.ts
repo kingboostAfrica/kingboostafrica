@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail, looksLikeBot } from "@/lib/validation";
+import { notifyOwner } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -29,6 +30,20 @@ export async function POST(request: Request) {
     });
 
     if (error) throw error;
+
+    const { data: course } = await supabase
+      .from("courses")
+      .select("title")
+      .eq("id", course_id)
+      .maybeSingle();
+    await notifyOwner(
+      `New course enrollment: ${course?.title ?? "Academy"} (${full_name})`,
+      "New course enrollment",
+      [["Course", course?.title], ["Name", full_name], ["Email", email], ["Phone", phone]],
+      email,
+      "/admin/messages",
+      "Open sign-ups in admin"
+    );
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Enrollment error:", err);

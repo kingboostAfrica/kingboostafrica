@@ -9,8 +9,13 @@ Cloudinary (all images) · Netlify (hosting).
 
 ## Environment variables
 
-See `.env.example`. All four are required and are set in Netlify
-(Site configuration → Environment variables).
+See `.env.example`. The first four are required and are set in Netlify
+(Site configuration → Environment variables). The email variables are optional:
+
+- `RESEND_API_KEY` — turns on email alerts (new orders, inquiries, course sign-ups, consulting requests).
+- `ORDER_NOTIFY_EMAIL` — where alerts go (default `kingboost.africa@gmail.com`).
+- `EMAIL_FROM` — e.g. `KingBoostFarms <orders@kingboostfarms.com.ng>`, needs a domain verified in Resend.
+  Setting it also switches on the order confirmation email to customers.
 
 ## Database setup (Supabase SQL editor, in this order)
 

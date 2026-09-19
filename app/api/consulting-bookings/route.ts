@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail, looksLikeBot } from "@/lib/validation";
+import { notifyOwner } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -38,6 +39,28 @@ export async function POST(request: Request) {
     });
 
     if (error) throw error;
+
+    const { data: service } = await supabase
+      .from("consulting_services")
+      .select("title")
+      .eq("id", service_id)
+      .maybeSingle();
+    await notifyOwner(
+      `New consulting request: ${service?.title ?? "Consulting"} (${full_name})`,
+      "New consulting request",
+      [
+        ["Service", service?.title],
+        ["Name", full_name],
+        ["Company", company],
+        ["Email", email],
+        ["Phone", phone],
+        ["Preferred date", preferred_date],
+        ["Message", message],
+      ],
+      email,
+      "/admin/messages",
+      "Open requests in admin"
+    );
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Consulting booking error:", err);
