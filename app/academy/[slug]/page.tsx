@@ -4,6 +4,33 @@ import { Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Course } from "@/lib/types";
 import EnrollForm from "@/components/EnrollForm";
+import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("courses")
+    .select("title, summary, image_url")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!data) return {};
+  const title = `${data.title} — KingBoostFarms Academy`;
+  const description = data.summary ?? `Enroll in ${data.title} at KingBoostFarms Academy.`;
+  const image = data.image_url;
+  return {
+    title,
+    description,
+    openGraph: { title, description, ...(image ? { images: [image] } : {}) },
+  };
+}
+
 
 export default async function CoursePage({
   params,
@@ -25,9 +52,11 @@ export default async function CoursePage({
   const c = course as Course;
 
   return (
-    <div className="max-w-5xl mx-auto px-5 py-12 grid sm:grid-cols-2 gap-10">
+    <>
+      <Breadcrumbs crumbs={[{ label: "Academy", href: "/academy" }, { label: c.title }]} />
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 lg:grid-cols-[1.2fr_1fr]">
       <div>
-        <div className="aspect-video bg-kb-cream rounded-2xl overflow-hidden relative mb-6">
+        <div className="aspect-video bg-kb-mist rounded-xl overflow-hidden relative mb-6">
           {c.image_url ? (
             <Image src={c.image_url} alt={c.title} fill className="object-cover" />
           ) : (
@@ -36,7 +65,7 @@ export default async function CoursePage({
             </div>
           )}
         </div>
-        <h1 className="font-display text-3xl font-bold text-kb-charcoal">{c.title}</h1>
+        <h1 className="font-display text-3xl font-bold text-kb-forest sm:text-4xl">{c.title}</h1>
         <div className="flex items-center gap-4 mt-3">
           <span className="text-2xl font-semibold text-kb-green">₦{c.price.toLocaleString()}</span>
           {c.duration && (
@@ -50,10 +79,11 @@ export default async function CoursePage({
         )}
       </div>
 
-      <div className="p-6 border border-kb-green/15 rounded-2xl h-fit">
-        <h2 className="font-display text-lg font-bold text-kb-charcoal mb-4">Enroll in this course</h2>
+      <div className="card h-fit p-6 lg:sticky lg:top-28">
+        <h2 className="font-display text-xl font-bold text-kb-forest mb-4">Enroll in this course</h2>
         <EnrollForm courseId={c.id} />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

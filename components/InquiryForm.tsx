@@ -14,6 +14,7 @@ export default function InquiryForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -26,6 +27,7 @@ export default function InquiryForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           source,
+          website,
           full_name: form.name,
           email: form.email,
           phone: form.phone,
@@ -44,14 +46,25 @@ export default function InquiryForm({
 
   if (submitted) {
     return (
-      <div className="p-5 bg-kb-green/10 rounded-2xl text-kb-green font-medium">
+      <div className="p-5 bg-kb-green/10 rounded-xl text-kb-green font-medium">
         Thanks — we&apos;ve received your inquiry and will be in touch shortly.
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="relative space-y-4">
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="absolute -left-[9999px] h-0 w-0 opacity-0"
+      />
+
       <h3 className="font-display text-lg font-bold text-kb-charcoal">{title}</h3>
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
@@ -60,7 +73,7 @@ export default function InquiryForm({
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+            className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
           />
         </div>
         <div>
@@ -70,7 +83,7 @@ export default function InquiryForm({
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+            className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
           />
         </div>
       </div>
@@ -79,7 +92,7 @@ export default function InquiryForm({
         <input
           value={form.phone}
           onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+          className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
         />
       </div>
       <div>
@@ -89,14 +102,14 @@ export default function InquiryForm({
           rows={4}
           value={form.message}
           onChange={(e) => setForm({ ...form, message: e.target.value })}
-          className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+          className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
         />
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button
         type="submit"
         disabled={submitting}
-        className="inline-flex items-center gap-2 bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors disabled:opacity-60"
+        className="btn btn-primary disabled:opacity-60"
       >
         <Send size={16} /> {submitting ? "Sending..." : "Send Inquiry"}
       </button>

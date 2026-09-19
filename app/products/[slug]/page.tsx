@@ -4,6 +4,33 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/types";
 import AddToCartButton from "@/components/AddToCartButton";
+import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("name, description, images")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!data) return {};
+  const title = `${data.name} — KingBoostFarms Food Mart`;
+  const description = data.description ?? `Buy ${data.name} from KingBoostFarms Food Mart.`;
+  const image = data.images?.[0];
+  return {
+    title,
+    description,
+    openGraph: { title, description, ...(image ? { images: [image] } : {}) },
+  };
+}
+
 
 export default async function ProductPage({
   params,
@@ -25,8 +52,10 @@ export default async function ProductPage({
   const p = product as Product;
 
   return (
-    <div className="max-w-6xl mx-auto px-5 py-12 grid sm:grid-cols-2 gap-10">
-      <div className="aspect-square bg-kb-cream rounded-2xl overflow-hidden relative">
+    <>
+      <Breadcrumbs crumbs={[{ label: "Food Mart", href: "/food-mart" }, ...(p.category ? [{ label: p.category.name, href: `/food-mart/${p.category.slug}` }] : []), { label: p.name }]} />
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2">
+      <div className="aspect-square bg-kb-mist rounded-xl overflow-hidden relative">
         {p.images?.[0] ? (
           <Image src={p.images[0]} alt={p.name} fill className="object-cover" />
         ) : (
@@ -40,15 +69,15 @@ export default async function ProductPage({
         {p.category && (
           <Link
             href={`/food-mart/${p.category.slug}`}
-            className="text-xs font-semibold uppercase tracking-wider text-kb-gold-dark"
+            className="text-sm font-semibold text-kb-gold-dark hover:underline"
           >
             {p.category.name}
           </Link>
         )}
-        <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2">
+        <h1 className="font-display text-3xl font-bold text-kb-forest mt-2 sm:text-4xl">
           {p.name}
         </h1>
-        <p className="text-2xl font-semibold text-kb-green mt-4">
+        <p className="text-3xl font-bold text-kb-green mt-4">
           ₦{p.price.toLocaleString()}
           <span className="text-kb-charcoal/50 font-normal text-base"> / {p.unit}</span>
         </p>
@@ -65,6 +94,7 @@ export default async function ProductPage({
           <AddToCartButton product={p} />
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

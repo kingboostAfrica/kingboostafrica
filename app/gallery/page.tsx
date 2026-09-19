@@ -1,9 +1,13 @@
-import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import type { GalleryItem, Category } from "@/lib/types";
+import PageHeader from "@/components/PageHeader";
+import FilterChips from "@/components/FilterChips";
 
-export const metadata = { title: "Gallery — KingBoostFarms" };
+export const metadata = {
+  title: "Gallery — KingBoostFarms",
+  description: "Photos from the KingBoostFarms farms, mart and programs.",
+};
 
 export default async function GalleryPage() {
   const supabase = await createClient();
@@ -13,57 +17,49 @@ export default async function GalleryPage() {
       .from("gallery_items")
       .select("*, category:categories(*)")
       .order("created_at", { ascending: false }),
-    supabase.from("categories").select("*").in("type", ["gallery", "both"]),
+    supabase.from("categories").select("*").in("type", ["gallery", "both"]).order("name"),
   ]);
 
+  const chips = [
+    { label: "All", href: "/gallery" },
+    ...((categories as Category[] | null) ?? []).map((c) => ({
+      label: c.name,
+      href: `/gallery/${c.slug}`,
+    })),
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto px-5 py-12">
-      <h1 className="font-display text-3xl sm:text-4xl font-bold text-kb-charcoal mb-2">
-        Gallery
-      </h1>
-      <p className="text-kb-charcoal/60 mb-8">
-        Life at KingBoostFarms — photos from our farms, mart, and programs.
-      </p>
+    <>
+      <PageHeader
+        title="Gallery"
+        description="Life at KingBoostFarms — photos from our farms, mart and programs."
+      />
+      <div className="mx-auto max-w-6xl px-5 py-12">
+        {chips.length > 1 && <FilterChips items={chips} activeHref="/gallery" />}
 
-      <div className="flex flex-wrap gap-2 mb-10">
-        <Link href="/gallery" className="text-sm font-medium px-4 py-2 rounded-full bg-kb-green text-white">
-          All
-        </Link>
-        {(categories as Category[] | null)?.map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/gallery/${cat.slug}`}
-            className="text-sm font-medium px-4 py-2 rounded-full border border-kb-green/30 text-kb-charcoal hover:bg-kb-green/10 transition-colors"
-          >
-            {cat.name}
-          </Link>
-        ))}
-      </div>
-
-      {items && items.length > 0 ? (
-        <div className="columns-2 sm:columns-3 gap-4 space-y-4">
-          {(items as GalleryItem[]).map((item) => (
-            <div key={item.id} className="break-inside-avoid rounded-2xl overflow-hidden bg-kb-cream">
-              <div className="relative w-full">
+        {items && items.length > 0 ? (
+          <div className="columns-2 gap-4 space-y-4 sm:columns-3">
+            {(items as GalleryItem[]).map((item) => (
+              <figure key={item.id} className="break-inside-avoid overflow-hidden rounded-xl bg-kb-mist">
                 <Image
                   src={item.image_url}
                   alt={item.caption || "KingBoostFarms photo"}
                   width={500}
                   height={500}
-                  className="w-full h-auto object-cover"
+                  className="h-auto w-full object-cover"
                 />
-              </div>
-              {item.caption && (
-                <p className="text-xs text-kb-charcoal/60 p-3">{item.caption}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-24 border border-dashed border-kb-green/30 rounded-2xl">
-          <p className="text-kb-charcoal/60">No photos shared yet.</p>
-        </div>
-      )}
-    </div>
+                {item.caption && (
+                  <figcaption className="p-3 text-sm text-kb-charcoal/70">{item.caption}</figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
+            <p className="text-kb-charcoal/60">No photos shared yet.</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

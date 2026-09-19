@@ -1,9 +1,13 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Product, Category } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
+import PageHeader from "@/components/PageHeader";
+import FilterChips from "@/components/FilterChips";
 
-export const metadata = { title: "Food Mart — KingBoostFarms" };
+export const metadata = {
+  title: "Food Mart — KingBoostFarms",
+  description: "Pure, natural, nutritious produce and staples from KingBoostFarms.",
+};
 
 export default async function FoodMartPage() {
   const supabase = await createClient();
@@ -14,55 +18,38 @@ export default async function FoodMartPage() {
       .select("*, category:categories(*)")
       .eq("is_active", true)
       .order("created_at", { ascending: false }),
-    supabase.from("categories").select("*").in("type", ["product", "both"]),
+    supabase.from("categories").select("*").in("type", ["product", "both"]).order("name"),
   ]);
 
+  const chips = [
+    { label: "All", href: "/food-mart" },
+    ...((categories as Category[] | null) ?? []).map((c) => ({
+      label: c.name,
+      href: `/food-mart/${c.slug}`,
+    })),
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto px-5 py-12">
-      <div className="mb-10">
-        <p className="text-xs font-semibold uppercase tracking-wider text-kb-gold-dark mb-2">
-          Pure. Natural. Nutritious.
-        </p>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold text-kb-charcoal">
-          Food Mart
-        </h1>
-        <p className="text-kb-charcoal/60 mt-2">
-          Fresh produce and staples, grown and sourced with care.
-        </p>
-      </div>
+    <>
+      <PageHeader
+        title="Food Mart"
+        description="Pure, natural, nutritious produce and staples, grown and sourced with care."
+      />
+      <div className="mx-auto max-w-6xl px-5 py-12">
+        {chips.length > 1 && <FilterChips items={chips} activeHref="/food-mart" />}
 
-      {/* Category filter chips */}
-      <div className="flex flex-wrap gap-2 mb-10">
-        <Link
-          href="/food-mart"
-          className="text-sm font-medium px-4 py-2 rounded-full bg-kb-green text-white"
-        >
-          All
-        </Link>
-        {(categories as Category[] | null)?.map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/food-mart/${cat.slug}`}
-            className="text-sm font-medium px-4 py-2 rounded-full border border-kb-green/30 text-kb-charcoal hover:bg-kb-green/10 transition-colors"
-          >
-            {cat.name}
-          </Link>
-        ))}
+        {products && products.length > 0 ? (
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            {(products as Product[]).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
+            <p className="text-kb-charcoal/60">No products listed yet. Check back soon.</p>
+          </div>
+        )}
       </div>
-
-      {products && products.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {(products as Product[]).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-24 border border-dashed border-kb-green/30 rounded-2xl">
-          <p className="text-kb-charcoal/60">
-            No products listed yet. Check back soon.
-          </p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

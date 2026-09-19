@@ -1,6 +1,7 @@
 import { Cpu, Satellite, Droplets, BarChart3 } from "lucide-react";
 import InquiryForm from "@/components/InquiryForm";
 import { getPageContent, pick } from "@/lib/content";
+import PageHeader from "@/components/PageHeader";
 
 export const metadata = { title: "Agritech — KingBoostFarms" };
 
@@ -18,17 +19,18 @@ export default async function AgritechPage() {
   const intro = pick(rows, "intro", "main");
 
   return (
-    <div className="max-w-5xl mx-auto px-5 py-16">
-      <p className="text-xs font-semibold uppercase tracking-wider text-kb-gold-dark mb-3">
-        {intro?.title ?? "Technology for modern farming"}
-      </p>
-      <h1 className="font-display text-4xl font-bold text-kb-charcoal mb-4">
-        Agritech
-      </h1>
-      <p className="text-lg text-kb-charcoal/70 max-w-2xl mb-14">
-        {intro?.body ??
-          "We bring practical technology to Nigerian farms — helping growers make better decisions, use fewer resources, and produce more consistent yields."}
-      </p>
+    <>
+      <PageHeader
+        title="Agritech"
+        description={
+          intro?.body ??
+          "We bring practical technology to Nigerian farms — helping growers make better decisions, use fewer resources, and produce more consistent yields."
+        }
+      />
+      <div className="mx-auto max-w-6xl px-5 py-14">
+        <h2 className="mb-8 text-2xl font-bold text-kb-forest sm:text-3xl">
+          {intro?.title ?? "Technology for modern farming"}
+        </h2>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-16">
         {capabilityDefaults.map((c) => {
@@ -36,9 +38,11 @@ export default async function AgritechPage() {
           const iconName = (row?.icon ?? c.icon) as keyof typeof iconMap;
           const Icon = iconMap[iconName] ?? Cpu;
           return (
-            <div key={c.key} className="p-6 border border-kb-green/15 rounded-2xl">
-              <Icon className="text-kb-green mb-3" size={28} />
-              <p className="font-semibold text-kb-charcoal mb-1">{row?.title ?? c.title}</p>
+            <div key={c.key} className="card p-6">
+              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-kb-mist text-kb-green">
+                <Icon size={24} aria-hidden="true" />
+              </span>
+              <p className="text-lg font-bold text-kb-forest mb-1">{row?.title ?? c.title}</p>
               <p className="text-sm text-kb-charcoal/60">{row?.body ?? c.body}</p>
             </div>
           );
@@ -48,6 +52,7 @@ export default async function AgritechPage() {
       <div className="max-w-xl">
         <InquiryForm source="agritech" title="Talk to our Agritech team" />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

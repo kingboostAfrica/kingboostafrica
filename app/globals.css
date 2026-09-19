@@ -1,30 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  /* KingBoostFarms palette */
-  --color-kb-green: #2E7D32;
+  /* KingBoostFarms palette — sampled from the logo */
+  --color-kb-forest: #05391D;        /* logo green: hero, footer, page headers */
+  --color-kb-forest-2: #0A4A27;      /* lifted forest for panels on forest */
+  --color-kb-green: #2E7D32;         /* actions on light backgrounds */
   --color-kb-green-dark: #1F5A24;
-  --color-kb-gold: #D4AF37;
-  --color-kb-gold-dark: #B8952C;
-  --color-kb-charcoal: #333333;
+  --color-kb-gold: #CF9B26;          /* logo gold, brightened slightly for screens */
+  --color-kb-gold-dark: #8F6608;     /* gold that is readable as text on white */
+  --color-kb-charcoal: #26302A;
   --color-kb-cream: #FAF8F3;
+  --color-kb-mist: #F1F5EF;          /* soft green-tinted section background */
 
   --background: #FFFFFF;
   --foreground: var(--color-kb-charcoal);
 }
 
 @theme inline {
+  --color-kb-forest: var(--color-kb-forest);
+  --color-kb-forest-2: var(--color-kb-forest-2);
   --color-kb-green: var(--color-kb-green);
   --color-kb-green-dark: var(--color-kb-green-dark);
   --color-kb-gold: var(--color-kb-gold);
   --color-kb-gold-dark: var(--color-kb-gold-dark);
   --color-kb-charcoal: var(--color-kb-charcoal);
   --color-kb-cream: var(--color-kb-cream);
+  --color-kb-mist: var(--color-kb-mist);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-display: var(--font-montserrat);
+  --font-display: var(--font-lora);
   --font-body: var(--font-opensans);
 }
 
@@ -32,4 +38,52 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Headlines use the serif that matches the logo wordmark. */
+h1, h2, h3 {
+  font-family: var(--font-display), Georgia, serif;
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-kb-gold);
+  outline-offset: 3px;
+}
+
+/* ---- Buttons (one shape everywhere) ---- */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.25;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .btn-primary { background: var(--color-kb-green); color: #fff; }
+  .btn-primary:hover { background: var(--color-kb-green-dark); }
+  .btn-gold { background: var(--color-kb-gold); color: var(--color-kb-forest); }
+  .btn-gold:hover { background: #E0AE3A; }
+  .btn-outline { border: 1.5px solid var(--color-kb-green); color: var(--color-kb-green); }
+  .btn-outline:hover { background: var(--color-kb-green); color: #fff; }
+  .btn-outline-light { border: 1.5px solid rgba(255, 255, 255, 0.55); color: #fff; }
+  .btn-outline-light:hover { background: #fff; color: var(--color-kb-forest); }
+
+  /* Product / course / service card surface */
+  .card {
+    background: #fff;
+    border: 1px solid rgba(5, 57, 29, 0.12);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(5, 57, 29, 0.28);
+    box-shadow: 0 10px 28px -12px rgba(5, 57, 29, 0.3);
+  }
 }

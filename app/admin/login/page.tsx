@@ -1,11 +1,11 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,15 +25,19 @@ export default function AdminLoginPage() {
       return;
     }
 
+    // Hard navigation on purpose: guarantees the server sees the new auth cookie.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = "/admin";
   }
 
   return (
-    <div className="max-w-md mx-auto px-5 py-24">
-      <h1 className="font-display text-3xl font-bold text-kb-charcoal mb-2">
-        Admin Login
+    <div className="flex min-h-screen items-center bg-kb-mist px-5 py-12">
+     <div className="card mx-auto w-full max-w-md p-8">
+      <Image src="/kingboost-icon.png" alt="" width={44} height={60} className="mb-5 h-14 w-auto" />
+      <h1 className="font-display text-3xl font-bold text-kb-forest mb-2">
+        Admin login
       </h1>
-      <p className="text-kb-charcoal/60 mb-8">
+      <p className="text-kb-charcoal/70 mb-8">
         Log in to manage KingBoostFarms content.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -44,7 +48,7 @@ export default function AdminLoginPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+            className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
           />
         </div>
         <div>
@@ -54,18 +58,22 @@ export default function AdminLoginPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+            className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors disabled:opacity-60"
+          className="btn btn-primary w-full disabled:opacity-60"
         >
           {loading ? "Logging in..." : "Log In"}
         </button>
       </form>
+      <Link href="/" className="mt-6 block text-center text-sm font-semibold text-kb-green hover:underline">
+        ← Back to the website
+      </Link>
+     </div>
     </div>
   );
 }

@@ -1,56 +1,100 @@
 import Link from "next/link";
 import Image from "next/image";
+import { MapPin, Mail, Globe } from "lucide-react";
+import { FieldLines } from "@/components/FieldArt";
+
+const verticals = [
+  { href: "/food-mart", label: "Food Mart" },
+  { href: "/academy", label: "Academy" },
+  { href: "/consulting", label: "Consulting" },
+  { href: "/agritech", label: "Agritech" },
+  { href: "/organics", label: "Organics" },
+];
+
+const company = [
+  { href: "/about", label: "About us" },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/contact", label: "Contact us" },
+  { href: "/privacy-policy", label: "Privacy policy" },
+  { href: "/disclaimer", label: "Disclaimer" },
+];
+
+const linkCls = "text-white/70 transition-colors hover:text-kb-gold";
 
 export default function Footer() {
   return (
-    <footer className="bg-kb-charcoal text-white mt-20">
-      <div className="max-w-6xl mx-auto px-5 py-12 grid grid-cols-1 sm:grid-cols-4 gap-10">
+    <footer className="relative overflow-hidden bg-kb-forest text-white">
+      <div className="h-1 bg-kb-gold" aria-hidden="true" />
+      <FieldLines className="pointer-events-none absolute inset-y-0 right-0 h-full w-full opacity-60 lg:w-2/3" />
+
+      <div className="relative mx-auto grid max-w-6xl gap-12 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.4fr]">
         <div>
           <Image
-            src="/logo-full.png"
-            alt="KingBoostFarms"
-            width={160}
-            height={136}
-            className="w-32 h-auto mb-3"
+            src="/kingboost-full-light.png"
+            alt="KingBoost Farms Ltd. — Cultivating Growth, Nourishing Nations"
+            width={775}
+            height={654}
+            className="h-auto w-44"
           />
-          <p className="text-sm text-white/70 max-w-xs">
-            Growing Value. Nourishing Lives. Pure, natural, nutritious produce
-            and agribusiness services across Nigeria.
+          <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
+            Pure, natural, nutritious produce and agribusiness services across Nigeria.
           </p>
         </div>
 
         <div>
-          <p className="text-sm font-semibold mb-3 text-kb-gold">Our Verticals</p>
-          <ul className="space-y-2 text-sm text-white/70">
-            <li><Link href="/food-mart" className="hover:text-kb-gold">Food Mart</Link></li>
-            <li><Link href="/academy" className="hover:text-kb-gold">Academy</Link></li>
-            <li><Link href="/consulting" className="hover:text-kb-gold">Consulting</Link></li>
-            <li><Link href="/agritech" className="hover:text-kb-gold">Agritech</Link></li>
-            <li><Link href="/organics" className="hover:text-kb-gold">Organics</Link></li>
+          <h2 className="text-base font-bold text-white">Our verticals</h2>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            {verticals.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className={linkCls}>
+                  {l.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
         <div>
-          <p className="text-sm font-semibold mb-3 text-kb-gold">Company</p>
-          <ul className="space-y-2 text-sm text-white/70">
-            <li><Link href="/about" className="hover:text-kb-gold">About Us</Link></li>
-            <li><Link href="/contact" className="hover:text-kb-gold">Contact Us</Link></li>
-            <li><Link href="/privacy-policy" className="hover:text-kb-gold">Privacy Policy</Link></li>
-            <li><Link href="/disclaimer" className="hover:text-kb-gold">Disclaimer</Link></li>
+          <h2 className="text-base font-bold text-white">Company</h2>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            {company.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className={linkCls}>
+                  {l.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
         <div>
-          <p className="text-sm font-semibold mb-3 text-kb-gold">Get in Touch</p>
-          <ul className="space-y-2 text-sm text-white/70">
-            <li>8 Ibudo Oloja Street, Igbanko, Badagry, Lagos State, Nigeria</li>
-            <li><a href="mailto:kingboost.africa@gmail.com" className="hover:text-kb-gold">kingboost.africa@gmail.com</a></li>
-            <li><a href="https://www.kingboostfarms.com.ng" className="hover:text-kb-gold">www.kingboostfarms.com.ng</a></li>
+          <h2 className="text-base font-bold text-white">Get in touch</h2>
+          <ul className="mt-4 space-y-3.5 text-sm text-white/70">
+            <li className="flex gap-3">
+              <MapPin size={18} className="mt-0.5 shrink-0 text-kb-gold" aria-hidden="true" />
+              <span>8 Ibudo Oloja Street, Igbanko, Badagry, Lagos State, Nigeria</span>
+            </li>
+            <li className="flex gap-3">
+              <Mail size={18} className="mt-0.5 shrink-0 text-kb-gold" aria-hidden="true" />
+              <a href="mailto:kingboost.africa@gmail.com" className={linkCls}>
+                kingboost.africa@gmail.com
+              </a>
+            </li>
+            <li className="flex gap-3">
+              <Globe size={18} className="mt-0.5 shrink-0 text-kb-gold" aria-hidden="true" />
+              <a href="https://www.kingboostfarms.com.ng" className={linkCls}>
+                www.kingboostfarms.com.ng
+              </a>
+            </li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/10 py-5 text-center text-xs text-white/50">
-        © {new Date().getFullYear()} KingBoostFarms. All rights reserved.
+
+      <div className="relative border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-5 py-5 text-xs text-white/55">
+          <p>© {new Date().getFullYear()} KingBoost Farms Ltd. All rights reserved.</p>
+          <p className="font-display italic">Cultivating Growth, Nourishing Nations</p>
+        </div>
       </div>
     </footer>
   );

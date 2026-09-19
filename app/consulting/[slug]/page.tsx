@@ -3,6 +3,33 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ConsultingService } from "@/lib/types";
 import BookingForm from "@/components/BookingForm";
+import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("consulting_services")
+    .select("title, summary, image_url")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!data) return {};
+  const title = `${data.title} — KingBoostFarms Consulting`;
+  const description = data.summary ?? `Book ${data.title} with KingBoostFarms Consulting.`;
+  const image = data.image_url;
+  return {
+    title,
+    description,
+    openGraph: { title, description, ...(image ? { images: [image] } : {}) },
+  };
+}
+
 
 export default async function ConsultingServicePage({
   params,
@@ -24,9 +51,11 @@ export default async function ConsultingServicePage({
   const s = service as ConsultingService;
 
   return (
-    <div className="max-w-5xl mx-auto px-5 py-12 grid sm:grid-cols-2 gap-10">
+    <>
+      <Breadcrumbs crumbs={[{ label: "Consulting", href: "/consulting" }, { label: s.title }]} />
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 lg:grid-cols-[1.2fr_1fr]">
       <div>
-        <div className="aspect-video bg-kb-cream rounded-2xl overflow-hidden relative mb-6">
+        <div className="aspect-video bg-kb-mist rounded-xl overflow-hidden relative mb-6">
           {s.image_url ? (
             <Image src={s.image_url} alt={s.title} fill className="object-cover" />
           ) : (
@@ -35,7 +64,7 @@ export default async function ConsultingServicePage({
             </div>
           )}
         </div>
-        <h1 className="font-display text-3xl font-bold text-kb-charcoal">{s.title}</h1>
+        <h1 className="font-display text-3xl font-bold text-kb-forest sm:text-4xl">{s.title}</h1>
         {s.price_from != null && (
           <p className="text-2xl font-semibold text-kb-green mt-3">
             From ₦{s.price_from.toLocaleString()}
@@ -46,10 +75,11 @@ export default async function ConsultingServicePage({
         )}
       </div>
 
-      <div className="p-6 border border-kb-green/15 rounded-2xl h-fit">
-        <h2 className="font-display text-lg font-bold text-kb-charcoal mb-4">Book this service</h2>
+      <div className="card h-fit p-6 lg:sticky lg:top-28">
+        <h2 className="font-display text-xl font-bold text-kb-forest mb-4">Book this service</h2>
         <BookingForm serviceId={s.id} />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,36 +1,31 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { clean, isEmail, looksLikeBot } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const {
-      service_id,
-      full_name,
-      email,
-      phone,
-      company,
-      preferred_date,
-      message,
-    } = body as {
-      service_id: string;
-      full_name: string;
-      email: string;
-      phone?: string;
-      company?: string;
-      preferred_date?: string | null;
-      message: string;
-    };
+    if (looksLikeBot(body)) return NextResponse.json({ ok: true });
 
-    if (!service_id || !full_name || !email || !message) {
+    const service_id = clean(body.service_id, 64);
+    const full_name = clean(body.full_name, 200);
+    const email = clean(body.email, 320);
+    const phone = clean(body.phone, 40);
+    const company = clean(body.company, 200);
+    const preferred_date = clean(body.preferred_date, 10);
+    const message = clean(body.message, 5000);
+
+    if (!service_id || !full_name || !isEmail(email) || !message) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { error: "Please fill in your name, a valid email and a message." },
         { status: 400 }
       );
     }
+    if (preferred_date && !/^\d{4}-\d{2}-\d{2}$/.test(preferred_date)) {
+      return NextResponse.json({ error: "Invalid date." }, { status: 400 });
+    }
 
     const supabase = await createClient();
-
     const { error } = await supabase.from("consulting_bookings").insert({
       service_id,
       full_name,
@@ -43,7 +38,6 @@ export async function POST(request: Request) {
     });
 
     if (error) throw error;
-
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Consulting booking error:", err);

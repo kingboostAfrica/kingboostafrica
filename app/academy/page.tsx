@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import PageHeader from "@/components/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 import type { Course } from "@/lib/types";
 import { Clock } from "lucide-react";
@@ -17,27 +18,21 @@ export default async function AcademyPage() {
   const list = (courses as Course[] | null) || [];
 
   return (
-    <div className="max-w-6xl mx-auto px-5 py-16">
-      <p className="text-xs font-semibold uppercase tracking-wider text-kb-gold-dark mb-3">
-        Training & courses in agribusiness
-      </p>
-      <h1 className="font-display text-4xl font-bold text-kb-charcoal mb-4">
-        Academy
-      </h1>
-      <p className="text-lg text-kb-charcoal/70 max-w-2xl mb-14">
-        Practical courses that build skills across farming, food processing,
-        and agribusiness management — taught by people who work the land.
-      </p>
-
+    <>
+      <PageHeader
+        title="Academy"
+        description="Practical courses that build skills across farming, food processing, and agribusiness management — taught by people who work the land."
+      />
+      <div className="mx-auto max-w-6xl px-5 py-14">
       {list.length > 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {list.map((course) => (
             <Link
               key={course.id}
               href={`/academy/${course.slug}`}
-              className="group block rounded-2xl overflow-hidden border border-kb-green/15 bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              className="card group block"
             >
-              <div className="aspect-video bg-kb-cream relative">
+              <div className="aspect-video bg-kb-mist relative">
                 {course.image_url ? (
                   <Image src={course.image_url} alt={course.title} fill className="object-cover" />
                 ) : (
@@ -47,7 +42,7 @@ export default async function AcademyPage() {
                 )}
               </div>
               <div className="p-5">
-                <p className="font-display font-bold text-kb-charcoal group-hover:text-kb-green transition-colors">
+                <p className="font-display text-lg font-bold text-kb-forest group-hover:text-kb-green transition-colors">
                   {course.title}
                 </p>
                 {course.summary && (
@@ -68,10 +63,11 @@ export default async function AcademyPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-24 border border-dashed border-kb-green/30 rounded-2xl">
+        <div className="text-center py-24 border border-dashed border-kb-forest/25 rounded-xl">
           <p className="text-kb-charcoal/60">No courses published yet. Check back soon.</p>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

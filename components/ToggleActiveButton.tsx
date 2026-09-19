@@ -17,28 +17,35 @@ export default function ToggleActiveButton({
   const supabase = createClient();
   const [pending, startTransition] = useTransition();
   const [active, setActive] = useState(isActive);
+  const [error, setError] = useState("");
 
   function handleToggle() {
+    setError("");
     startTransition(async () => {
-      const { error } = await supabase
+      const { error: updError } = await supabase
         .from(table)
         .update({ is_active: !active })
         .eq("id", id);
 
-      if (!error) {
-        setActive(!active);
-        router.refresh();
+      if (updError) {
+        setError(updError.message);
+        return;
       }
+      setActive(!active);
+      router.refresh();
     });
   }
 
   return (
-    <button
-      onClick={handleToggle}
-      disabled={pending}
-      className="text-xs font-medium px-3 py-1.5 rounded-full border border-kb-green/30 text-kb-charcoal hover:bg-kb-green/10 transition-colors disabled:opacity-50 whitespace-nowrap"
-    >
-      {active ? "Hide" : "Show"}
-    </button>
+    <span className="inline-flex flex-col items-end">
+      <button
+        onClick={handleToggle}
+        disabled={pending}
+        className="text-xs font-medium px-3 py-1.5 rounded-full border border-kb-green/30 text-kb-charcoal hover:bg-kb-green/10 transition-colors disabled:opacity-50 whitespace-nowrap"
+      >
+        {active ? "Hide" : "Show"}
+      </button>
+      {error && <span className="text-[11px] text-red-600 mt-1 max-w-40 text-right">{error}</span>}
+    </span>
   );
 }

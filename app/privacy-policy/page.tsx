@@ -1,16 +1,16 @@
+import PageHeader from "@/components/PageHeader";
+
 export const metadata = { title: "Privacy Policy — KingBoostFarms" };
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="max-w-3xl mx-auto px-5 py-16">
-      <h1 className="font-display text-4xl font-bold text-kb-charcoal mb-2">
-        Privacy Policy
-      </h1>
-      <p className="text-sm text-kb-charcoal/50 mb-10">Last updated: August 2026</p>
+    <>
+      <PageHeader title="Privacy Policy" description="Last updated: August 2026" />
+      <div className="mx-auto max-w-6xl px-5 py-14">
 
-      <div className="space-y-8 text-kb-charcoal/70 leading-relaxed">
+      <div className="max-w-3xl space-y-8 text-kb-charcoal/70 leading-relaxed">
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">1. Introduction</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">1. Introduction</h2>
           <p>
             KingBoostFarms (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) respects your privacy and is
             committed to protecting the personal information you share with
@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">2. Information We Collect</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">2. Information We Collect</h2>
           <ul className="list-disc pl-5 space-y-1">
             <li>Contact details you provide, such as name, email address, and phone number.</li>
             <li>Order and delivery information when you purchase from Food Mart.</li>
@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">3. How We Use Your Information</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">3. How We Use Your Information</h2>
           <p>
             We use the information we collect to fulfill orders, process
             enrollments and bookings, respond to inquiries, improve our
@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">4. Sharing of Information</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">4. Sharing of Information</h2>
           <p>
             We do not sell your personal information. We may share it with
             trusted service providers who help us operate our business
@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">5. Data Security</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">5. Data Security</h2>
           <p>
             We take reasonable technical and organizational measures to
             protect your information from unauthorized access, loss, or
@@ -62,7 +62,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">6. Your Choices</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">6. Your Choices</h2>
           <p>
             You may contact us at any time to ask what personal information
             we hold about you, to request corrections, or to request that we
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">7. Changes to This Policy</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">7. Changes to This Policy</h2>
           <p>
             We may update this Privacy Policy from time to time. Any changes
             will be posted on this page with an updated revision date.
@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-kb-charcoal mb-2">8. Contact Us</h2>
+          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">8. Contact Us</h2>
           <p>
             If you have questions about this Privacy Policy, please contact
             us at{" "}
@@ -92,6 +92,7 @@ export default function PrivacyPolicyPage() {
           </p>
         </section>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -2,167 +2,183 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, ShoppingBasket, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  X,
+  ShoppingBasket,
+  Mail,
+  MapPin,
+  ShoppingCart,
+  GraduationCap,
+  Briefcase,
+  Cpu,
+  Leaf,
+  ArrowRight,
+} from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
-const services = [
-  { href: "/food-mart", label: "Food Mart" },
-  { href: "/academy", label: "Academy" },
-  { href: "/consulting", label: "Consulting" },
-  { href: "/agritech", label: "Agritech" },
-  { href: "/organics", label: "Organics" },
+const verticals = [
+  { href: "/food-mart", label: "Food Mart", desc: "Fresh, natural produce", icon: ShoppingCart },
+  { href: "/academy", label: "Academy", desc: "Agribusiness training", icon: GraduationCap },
+  { href: "/consulting", label: "Consulting", desc: "Expert farm advisory", icon: Briefcase },
+  { href: "/agritech", label: "Agritech", desc: "Technology for farming", icon: Cpu },
+  { href: "/organics", label: "Organics", desc: "Certified organic solutions", icon: Leaf },
+];
+
+const secondary = [
+  { href: "/gallery", label: "Gallery" },
+  { href: "/about", label: "About" },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const { count } = useCart();
+  const pathname = usePathname();
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const close = () => setOpen(false);
+
+  if (pathname.startsWith("/admin")) return null;
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-kb-green/15">
-      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Image
-            src="/logo-icon.png"
-            alt="KingBoostFarms"
-            width={40}
-            height={40}
-            priority
-            className="h-9 w-9 object-contain"
-          />
-          <span className="font-display text-lg font-bold text-kb-green tracking-tight">
-            KingBoost<span className="text-kb-gold">Farms</span>
-          </span>
-        </Link>
-
-        <nav className="hidden lg:flex items-center gap-7">
-          <div
-            className="relative"
-            onMouseEnter={() => setServicesOpen(true)}
-            onMouseLeave={() => setServicesOpen(false)}
-          >
-            <button
-              className="flex items-center gap-1 text-sm font-medium text-kb-charcoal hover:text-kb-green transition-colors"
-              onClick={() => setServicesOpen((v) => !v)}
-              aria-expanded={servicesOpen}
+    <>
+      {/* Utility bar */}
+      <div className="hidden bg-kb-forest text-white/80 sm:block">
+        <div className="mx-auto flex h-9 max-w-6xl items-center justify-between px-5 text-xs">
+          <div className="flex items-center gap-6">
+            <span className="flex items-center gap-1.5">
+              <MapPin size={13} className="text-kb-gold" aria-hidden="true" />
+              Igbanko, Badagry, Lagos
+            </span>
+            <a
+              href="mailto:kingboost.africa@gmail.com"
+              className="flex items-center gap-1.5 hover:text-white"
             >
-              Services
-              <ChevronDown
-                size={14}
-                className={`transition-transform ${servicesOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {servicesOpen && (
-              <div className="absolute top-full left-0 pt-3 w-56">
-                <div className="bg-white border border-kb-green/15 rounded-xl shadow-lg py-2">
-                  {services.map((s) => (
-                    <Link
-                      key={s.href}
-                      href={s.href}
-                      className="block px-4 py-2.5 text-sm font-medium text-kb-charcoal hover:bg-kb-green/5 hover:text-kb-green transition-colors"
-                      onClick={() => setServicesOpen(false)}
-                    >
-                      {s.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+              <Mail size={13} className="text-kb-gold" aria-hidden="true" />
+              kingboost.africa@gmail.com
+            </a>
           </div>
-
-          <Link
-            href="/about"
-            className="text-sm font-medium text-kb-charcoal hover:text-kb-green transition-colors"
-          >
-            About
-          </Link>
-        </nav>
-
-        <div className="hidden lg:flex items-center gap-4">
-          <Link
-            href="/cart"
-            aria-label="View cart"
-            className="relative p-2 text-kb-charcoal hover:text-kb-green transition-colors"
-          >
-            <ShoppingBasket size={20} />
-            {count > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-kb-gold text-white text-[10px] font-semibold w-4 h-4 rounded-full flex items-center justify-center">
-                {count}
-              </span>
-            )}
-          </Link>
-          <Link
-            href="/contact"
-            className="text-sm font-medium px-4 py-2 bg-kb-green text-white rounded-full hover:bg-kb-green-dark transition-colors"
-          >
-            Contact Us
-          </Link>
+          <p className="hidden font-display italic text-white/70 md:block">
+            Cultivating Growth, Nourishing Nations
+          </p>
         </div>
-
-        <button
-          className="lg:hidden p-2 text-kb-charcoal"
-          onClick={() => setOpen(!open)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-        >
-          {open ? <X size={24} /> : <Menu size={24} />}
-        </button>
       </div>
 
-      {open && (
-        <nav className="lg:hidden border-t border-kb-green/15 bg-white px-5 py-4 flex flex-col gap-1">
-          <button
-            className="flex items-center justify-between text-sm font-medium text-kb-charcoal hover:text-kb-green py-2"
-            onClick={() => setMobileServicesOpen((v) => !v)}
-            aria-expanded={mobileServicesOpen}
-          >
-            Services
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
+      <header className="sticky top-0 z-50 border-b border-kb-forest/10 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-6 px-5">
+          <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="KingBoostFarms home" onClick={close}>
+            <Image
+              src="/kingboost-icon.png"
+              alt=""
+              width={40}
+              height={56}
+              priority
+              className="h-12 w-auto sm:h-14"
             />
-          </button>
-          {mobileServicesOpen && (
-            <div className="pl-4 flex flex-col gap-3 pb-2">
-              {services.map((s) => (
-                <Link
-                  key={s.href}
-                  href={s.href}
-                  className="text-sm text-kb-charcoal/80 hover:text-kb-green"
-                  onClick={() => setOpen(false)}
-                >
-                  {s.label}
-                </Link>
-              ))}
-            </div>
-          )}
+            <Image
+              src="/kingboost-wordmark.png"
+              alt="KingBoost Farms Ltd."
+              width={170}
+              height={36}
+              priority
+              className="h-7 w-auto sm:h-9"
+            />
+          </Link>
 
-          <Link
-            href="/about"
-            className="text-sm font-medium text-kb-charcoal hover:text-kb-green py-2"
-            onClick={() => setOpen(false)}
+          <nav className="hidden items-center gap-1 xl:flex" aria-label="Main">
+            {[...verticals, ...secondary].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={isActive(l.href) ? "page" : undefined}
+                className={`relative px-3 py-2 text-[0.9375rem] font-semibold transition-colors ${
+                  isActive(l.href) ? "text-kb-green" : "text-kb-charcoal hover:text-kb-green"
+                }`}
+              >
+                {l.label}
+                {isActive(l.href) && (
+                  <span className="absolute inset-x-3 -bottom-[1.05rem] h-[3px] rounded-full bg-kb-gold" />
+                )}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/cart"
+              aria-label={count > 0 ? `View cart, ${count} item${count === 1 ? "" : "s"}` : "View cart"}
+              className="relative rounded-lg p-2.5 text-kb-charcoal transition-colors hover:bg-kb-mist hover:text-kb-green"
+            >
+              <ShoppingBasket size={22} />
+              {count > 0 && (
+                <span className="absolute right-0.5 top-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-kb-gold px-1 text-[10px] font-bold text-kb-forest">
+                  {count}
+                </span>
+              )}
+            </Link>
+            <Link href="/contact" className="btn btn-primary hidden !px-5 !py-2.5 xl:inline-flex">
+              Contact us
+            </Link>
+            <button
+              className="rounded-lg p-2.5 text-kb-charcoal hover:bg-kb-mist xl:hidden"
+              onClick={() => setOpen(!open)}
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+            >
+              {open ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+
+        {open && (
+          <nav
+            id="mobile-menu"
+            aria-label="Mobile"
+            className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-kb-forest/10 bg-white xl:hidden"
           >
-            About
-          </Link>
-          <Link
-            href="/cart"
-            className="text-sm font-medium text-kb-charcoal hover:text-kb-green py-2"
-            onClick={() => setOpen(false)}
-          >
-            Cart
-          </Link>
-          <Link
-            href="/contact"
-            className="text-sm font-medium px-4 py-2.5 bg-kb-green text-white rounded-full text-center mt-2"
-            onClick={() => setOpen(false)}
-          >
-            Contact Us
-          </Link>
-        </nav>
-      )}
-    </header>
+            <div className="mx-auto max-w-6xl px-5 py-5">
+              <ul className="grid gap-1 sm:grid-cols-2">
+                {verticals.map((v) => (
+                  <li key={v.href}>
+                    <Link
+                      href={v.href}
+                      onClick={close}
+                      className={`flex items-center gap-4 rounded-lg px-3 py-3 ${
+                        isActive(v.href) ? "bg-kb-mist" : "hover:bg-kb-mist"
+                      }`}
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-kb-forest text-kb-gold">
+                        <v.icon size={20} aria-hidden="true" />
+                      </span>
+                      <span>
+                        <span className="block font-semibold text-kb-charcoal">{v.label}</span>
+                        <span className="block text-sm text-kb-charcoal/60">{v.desc}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-kb-forest/10 pt-4">
+                {secondary.map((l) => (
+                  <Link key={l.href} href={l.href} onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
+                    {l.label}
+                  </Link>
+                ))}
+                <Link href="/cart" onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
+                  Cart{count > 0 ? ` (${count})` : ""}
+                </Link>
+                <Link href="/contact" onClick={close} className="btn btn-primary ml-auto">
+                  Contact us <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
+          </nav>
+        )}
+      </header>
+    </>
   );
 }

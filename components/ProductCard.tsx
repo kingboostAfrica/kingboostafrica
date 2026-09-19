@@ -4,32 +4,37 @@ import type { Product } from "@/lib/types";
 
 export default function ProductCard({ product }: { product: Product }) {
   const image = product.images?.[0];
+  const soldOut = product.stock <= 0;
 
   return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="group block rounded-2xl overflow-hidden border border-kb-green/15 bg-white hover:shadow-lg hover:-translate-y-0.5 transition-all"
-    >
-      <div className="aspect-square bg-kb-cream relative">
+    <Link href={`/products/${product.slug}`} className="card group block">
+      <div className="relative aspect-square bg-kb-mist">
         {image ? (
           <Image
             src={image}
             alt={product.name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`object-cover transition-transform duration-300 group-hover:scale-105 ${
+              soldOut ? "opacity-60 grayscale" : ""
+            }`}
             sizes="(max-width: 640px) 50vw, 25vw"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-kb-green/50 text-sm">
+          <div className="flex h-full w-full items-center justify-center text-sm text-kb-green/60">
             No image
           </div>
         )}
+        {soldOut && (
+          <span className="absolute left-3 top-3 rounded-md bg-kb-charcoal px-2.5 py-1 text-xs font-semibold text-white">
+            Out of stock
+          </span>
+        )}
       </div>
       <div className="p-4">
-        <p className="font-medium text-kb-charcoal truncate">{product.name}</p>
-        <p className="text-kb-green font-semibold mt-1">
+        <p className="truncate font-semibold text-kb-charcoal">{product.name}</p>
+        <p className="mt-1 text-lg font-bold text-kb-green">
           ₦{product.price.toLocaleString()}
-          <span className="text-kb-charcoal/50 font-normal text-sm"> / {product.unit}</span>
+          <span className="text-sm font-normal text-kb-charcoal/60"> / {product.unit}</span>
         </p>
       </div>
     </Link>

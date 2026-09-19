@@ -1,27 +1,30 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { InquirySource } from "@/lib/types";
+import { clean, isEmail, looksLikeBot } from "@/lib/validation";
+
+const SOURCES = ["agritech", "organics", "general"];
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { source, full_name, email, phone, message } = body as {
-      source: InquirySource;
-      full_name: string;
-      email: string;
-      phone?: string;
-      message: string;
-    };
 
-    if (!source || !full_name || !email || !message) {
+    // Silently accept-and-drop bot submissions so they don't retry.
+    if (looksLikeBot(body)) return NextResponse.json({ ok: true });
+
+    const source = clean(body.source, 20);
+    const full_name = clean(body.full_name, 200);
+    const email = clean(body.email, 320);
+    const phone = clean(body.phone, 40);
+    const message = clean(body.message, 5000);
+
+    if (!SOURCES.includes(source) || !full_name || !isEmail(email) || !message) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { error: "Please fill in your name, a valid email and a message." },
         { status: 400 }
       );
     }
 
     const supabase = await createClient();
-
     const { error } = await supabase.from("inquiries").insert({
       source,
       full_name,
@@ -32,7 +35,6 @@ export async function POST(request: Request) {
     });
 
     if (error) throw error;
-
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Inquiry submission error:", err);

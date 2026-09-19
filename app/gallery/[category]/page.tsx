@@ -1,8 +1,9 @@
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { GalleryItem, Category } from "@/lib/types";
+import PageHeader from "@/components/PageHeader";
+import FilterChips from "@/components/FilterChips";
 
 export default async function GalleryCategoryPage({
   params,
@@ -19,40 +20,52 @@ export default async function GalleryCategoryPage({
     .single();
 
   if (!category) notFound();
+  const cat = category as Category;
 
-  const { data: items } = await supabase
-    .from("gallery_items")
-    .select("*")
-    .eq("category_id", (category as Category).id)
-    .order("created_at", { ascending: false });
+  const [{ data: items }, { data: categories }] = await Promise.all([
+    supabase
+      .from("gallery_items")
+      .select("*")
+      .eq("category_id", cat.id)
+      .order("created_at", { ascending: false }),
+    supabase.from("categories").select("*").in("type", ["gallery", "both"]).order("name"),
+  ]);
+
+  const chips = [
+    { label: "All", href: "/gallery" },
+    ...((categories as Category[] | null) ?? []).map((c) => ({
+      label: c.name,
+      href: `/gallery/${c.slug}`,
+    })),
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto px-5 py-12">
-      <Link href="/gallery" className="text-sm text-kb-gold-dark hover:underline">
-        ← All photos
-      </Link>
-      <h1 className="font-display text-3xl sm:text-4xl font-bold text-kb-charcoal mt-3 mb-10">
-        {(category as Category).name}
-      </h1>
+    <>
+      <PageHeader title={cat.name} crumbs={[{ label: "Gallery", href: "/gallery" }]} />
+      <div className="mx-auto max-w-6xl px-5 py-12">
+        <FilterChips items={chips} activeHref={`/gallery/${cat.slug}`} />
 
-      {items && items.length > 0 ? (
-        <div className="columns-2 sm:columns-3 gap-4 space-y-4">
-          {(items as GalleryItem[]).map((item) => (
-            <div key={item.id} className="break-inside-avoid rounded-2xl overflow-hidden bg-kb-cream">
-              <Image
-                src={item.image_url}
-                alt={item.caption || "KingBoostFarms photo"}
-                width={500}
-                height={500}
-                className="w-full h-auto object-cover"
-              />
-              {item.caption && <p className="text-xs text-kb-charcoal/60 p-3">{item.caption}</p>}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-kb-charcoal/60">No photos in this category yet.</p>
-      )}
-    </div>
+        {items && items.length > 0 ? (
+          <div className="columns-2 gap-4 space-y-4 sm:columns-3">
+            {(items as GalleryItem[]).map((item) => (
+              <figure key={item.id} className="break-inside-avoid overflow-hidden rounded-xl bg-kb-mist">
+                <Image
+                  src={item.image_url}
+                  alt={item.caption || "KingBoostFarms photo"}
+                  width={500}
+                  height={500}
+                  className="h-auto w-full object-cover"
+                />
+                {item.caption && (
+                  <figcaption className="p-3 text-sm text-kb-charcoal/70">{item.caption}</figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        ) : (
+          <p className="text-kb-charcoal/60">No photos in this category yet.</p>
+        )}
+      </div>
+    </>
   );
 }

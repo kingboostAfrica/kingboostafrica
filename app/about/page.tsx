@@ -1,5 +1,6 @@
 import { Leaf, Users, MapPin, Target } from "lucide-react";
 import { getPageContent, pick } from "@/lib/content";
+import PageHeader from "@/components/PageHeader";
 
 export const metadata = { title: "About Us — KingBoostFarms" };
 
@@ -28,17 +29,16 @@ export default async function AboutPage() {
   const paragraphs = (intro?.body ?? introDefault).split("\n\n");
 
   return (
-    <div className="max-w-3xl mx-auto px-5 py-16">
-      <p className="text-xs font-semibold uppercase tracking-wider text-kb-gold-dark mb-3">
-        {intro?.title ?? "Growing Value. Nourishing Lives."}
-      </p>
-      <h1 className="font-display text-4xl font-bold text-kb-charcoal mb-6">
-        About KingBoostFarms
-      </h1>
+    <>
+      <PageHeader
+        title="About KingBoostFarms"
+        description={intro?.title ?? "Growing Value. Nourishing Lives."}
+      />
+      <div className="mx-auto max-w-6xl px-5 py-14">
       {paragraphs.map((p, i) => (
         <p
           key={i}
-          className={`text-kb-charcoal/70 leading-relaxed ${
+          className={`max-w-3xl text-kb-charcoal/75 leading-relaxed ${
             i === 0 ? "text-lg mb-6" : "mb-12"
           }`}
         >
@@ -50,8 +50,8 @@ export default async function AboutPage() {
         {verticalDefaults.map((v) => {
           const row = pick(rows, "vertical", v.key);
           return (
-            <div key={v.key} className="p-5 border border-kb-green/15 rounded-2xl">
-              <p className="font-display font-bold text-kb-green mb-1">{row?.title ?? v.name}</p>
+            <div key={v.key} className="card p-6">
+              <p className="font-display text-lg font-bold text-kb-forest mb-1">{row?.title ?? v.name}</p>
               <p className="text-sm text-kb-charcoal/60">{row?.body ?? v.desc}</p>
             </div>
           );
@@ -73,12 +73,13 @@ export default async function AboutPage() {
         })}
       </div>
 
-      <div className="mt-14 flex items-start gap-3 p-5 bg-kb-cream rounded-2xl">
+      <div className="mt-14 flex items-start gap-3 p-5 bg-kb-cream rounded-xl">
         <MapPin className="text-kb-green shrink-0 mt-0.5" size={20} />
         <p className="text-sm text-kb-charcoal/70">
           8 Ibudo Oloja Street, Igbanko, Badagry, Lagos State, Nigeria
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

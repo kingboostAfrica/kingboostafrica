@@ -13,7 +13,7 @@ export default function AddToCartButton({ product }: { product: Product }) {
     return (
       <button
         disabled
-        className="inline-flex items-center gap-2 bg-kb-charcoal/10 text-kb-charcoal/40 px-6 py-3 rounded-full font-medium cursor-not-allowed"
+        className="btn bg-kb-charcoal/10 text-kb-charcoal/40 cursor-not-allowed"
       >
         Out of stock
       </button>
@@ -27,7 +27,7 @@ export default function AddToCartButton({ product }: { product: Product }) {
         setAdded(true);
         setTimeout(() => setAdded(false), 1500);
       }}
-      className="inline-flex items-center gap-2 bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors"
+      className="btn btn-primary"
     >
       {added ? (
         <>

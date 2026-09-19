@@ -1,33 +1,45 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ order?: string }>;
+  searchParams: Promise<{ order?: string; total?: string }>;
 }) {
-  const { order } = await searchParams;
+  const { order, total } = await searchParams;
+  const totalNum = Number(total);
 
   return (
-    <div className="max-w-xl mx-auto px-5 py-24 text-center">
-      <CheckCircle2 className="mx-auto text-kb-green mb-4" size={48} />
-      <h1 className="font-display text-3xl font-bold text-kb-charcoal mb-3">
-        Order placed
-      </h1>
-      <p className="text-kb-charcoal/60 mb-2">
+    <>
+    <PageHeader title="Order placed" />
+    <div className="max-w-xl mx-auto px-5 py-20 text-center">
+      <CheckCircle2 className="mx-auto text-kb-green mb-4" size={48} aria-hidden="true" />
+      <h2 className="font-display text-2xl font-bold text-kb-forest mb-3">
+        Thank you for your order
+      </h2>
+      <p className="text-kb-charcoal/70 mb-2">
         Thank you — your order has been received.
       </p>
       {order && (
         <p className="text-sm text-kb-charcoal/50 mb-8">
-          Order reference: <span className="font-mono">{order}</span>
+          Order reference:{" "}
+          <span className="font-mono">{order.slice(0, 8).toUpperCase()}</span>
+        </p>
+      )}
+      {Number.isFinite(totalNum) && totalNum > 0 && (
+        <p className="text-sm text-kb-charcoal/70 mb-8">
+          Order total: <span className="font-semibold text-kb-green">₦{totalNum.toLocaleString()}</span>
+          {" "}— payable on delivery.
         </p>
       )}
       <Link
         href="/food-mart"
-        className="inline-block bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors"
+        className="btn btn-primary"
       >
-        Continue Shopping
+        Continue shopping
       </Link>
     </div>
+    </>
   );
 }

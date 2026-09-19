@@ -4,93 +4,92 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, total } = useCart();
 
   if (items.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto px-5 py-24 text-center">
-        <h1 className="font-display text-3xl font-bold text-kb-charcoal mb-3">
-          Your cart is empty
-        </h1>
-        <p className="text-kb-charcoal/60 mb-8">
-          Browse Food Mart to find fresh, pure, natural produce.
-        </p>
-        <Link
-          href="/food-mart"
-          className="inline-block bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors"
-        >
-          Shop Food Mart
-        </Link>
-      </div>
+      <>
+        <PageHeader title="Your cart" />
+        <div className="mx-auto max-w-3xl px-5 py-20 text-center">
+          <h2 className="mb-3 text-2xl font-bold text-kb-forest">Your cart is empty</h2>
+          <p className="mb-8 text-kb-charcoal/70">
+            Browse Food Mart to find fresh, pure, natural produce.
+          </p>
+          <Link href="/food-mart" className="btn btn-primary">
+            Shop Food Mart
+          </Link>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-5 py-12">
-      <h1 className="font-display text-3xl font-bold text-kb-charcoal mb-8">
-        Your Cart
-      </h1>
-
-      <div className="space-y-4">
-        {items.map(({ product, quantity }) => (
-          <div
-            key={product.id}
-            className="flex gap-4 p-4 border border-kb-green/15 rounded-2xl items-center"
-          >
-            <div className="w-20 h-20 bg-kb-cream rounded-xl overflow-hidden relative shrink-0">
-              {product.images?.[0] && (
-                <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-kb-charcoal truncate">{product.name}</p>
-              <p className="text-kb-green font-semibold text-sm">
-                ₦{product.price.toLocaleString()} / {product.unit}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 border border-kb-green/30 rounded-full px-2 py-1">
-              <button
-                onClick={() => updateQuantity(product.id, quantity - 1)}
-                className="p-1 hover:text-kb-green"
-                aria-label="Decrease quantity"
-              >
-                <Minus size={14} />
-              </button>
-              <span className="text-sm w-6 text-center">{quantity}</span>
-              <button
-                onClick={() => updateQuantity(product.id, quantity + 1)}
-                className="p-1 hover:text-kb-green"
-                aria-label="Increase quantity"
-              >
-                <Plus size={14} />
-              </button>
-            </div>
-            <button
-              onClick={() => removeItem(product.id)}
-              className="p-2 text-kb-charcoal/40 hover:text-kb-green"
-              aria-label={`Remove ${product.name}`}
+    <>
+      <PageHeader title="Your cart" description={`${items.length} item${items.length === 1 ? "" : "s"} ready to order`} />
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 lg:grid-cols-[1fr_22rem]">
+        <div className="space-y-4">
+          {items.map(({ product, quantity }) => (
+            <div
+              key={product.id}
+              className="card flex items-center gap-4 p-4"
             >
-              <Trash2 size={18} />
-            </button>
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-kb-mist">
+                {product.images?.[0] && (
+                  <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-kb-charcoal">{product.name}</p>
+                <p className="text-sm font-semibold text-kb-green">
+                  ₦{product.price.toLocaleString()} / {product.unit}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-kb-forest/25 px-2 py-1">
+                <button
+                  onClick={() => updateQuantity(product.id, quantity - 1)}
+                  className="p-1 hover:text-kb-green"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="w-6 text-center text-sm">{quantity}</span>
+                <button
+                  onClick={() => updateQuantity(product.id, quantity + 1)}
+                  className="p-1 hover:text-kb-green"
+                  aria-label="Increase quantity"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+              <button
+                onClick={() => removeItem(product.id)}
+                className="p-2 text-kb-charcoal/40 hover:text-red-600"
+                aria-label={`Remove ${product.name}`}
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <aside className="card h-fit p-6 lg:sticky lg:top-28">
+          <h2 className="text-xl font-bold text-kb-forest">Order summary</h2>
+          <div className="mt-5 flex items-center justify-between border-t border-kb-forest/10 pt-5">
+            <p className="font-semibold text-kb-charcoal">Total</p>
+            <p className="text-2xl font-bold text-kb-green">₦{total.toLocaleString()}</p>
           </div>
-        ))}
+          <p className="mt-2 text-sm text-kb-charcoal/60">Payment is collected on delivery.</p>
+          <Link href="/checkout" className="btn btn-primary mt-6 w-full">
+            Proceed to checkout
+          </Link>
+          <Link href="/food-mart" className="mt-3 block text-center text-sm font-semibold text-kb-green hover:underline">
+            Continue shopping
+          </Link>
+        </aside>
       </div>
-
-      <div className="mt-10 flex items-center justify-between border-t border-kb-green/15 pt-6">
-        <p className="text-lg font-semibold text-kb-charcoal">Total</p>
-        <p className="text-2xl font-semibold text-kb-green">
-          ₦{total.toLocaleString()}
-        </p>
-      </div>
-
-      <Link
-        href="/checkout"
-        className="mt-6 block text-center bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors"
-      >
-        Proceed to Checkout
-      </Link>
-    </div>
+    </>
   );
 }

@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+            className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
           />
         </div>
         <div>
@@ -87,7 +87,7 @@ export default function ResetPasswordPage() {
             minLength={6}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="w-full border border-kb-green/30 rounded-xl px-4 py-2.5 bg-white"
+            className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
           />
         </div>
 
@@ -96,7 +96,7 @@ export default function ResetPasswordPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-kb-green text-white px-6 py-3 rounded-full font-medium hover:bg-kb-green-dark transition-colors disabled:opacity-60"
+          className="btn btn-primary w-full disabled:opacity-60"
         >
           {loading ? "Updating..." : "Update Password"}
         </button>

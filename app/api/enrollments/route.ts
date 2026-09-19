@@ -1,25 +1,25 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { clean, isEmail, looksLikeBot } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { course_id, full_name, email, phone } = body as {
-      course_id: string;
-      full_name: string;
-      email: string;
-      phone?: string;
-    };
+    if (looksLikeBot(body)) return NextResponse.json({ ok: true });
 
-    if (!course_id || !full_name || !email) {
+    const course_id = clean(body.course_id, 64);
+    const full_name = clean(body.full_name, 200);
+    const email = clean(body.email, 320);
+    const phone = clean(body.phone, 40);
+
+    if (!course_id || !full_name || !isEmail(email)) {
       return NextResponse.json(
-        { error: "Missing required fields." },
+        { error: "Please fill in your name and a valid email." },
         { status: 400 }
       );
     }
 
     const supabase = await createClient();
-
     const { error } = await supabase.from("enrollments").insert({
       course_id,
       full_name,
@@ -29,7 +29,6 @@ export async function POST(request: Request) {
     });
 
     if (error) throw error;
-
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Enrollment error:", err);

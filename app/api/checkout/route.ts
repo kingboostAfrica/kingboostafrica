@@ -1,66 +1,76 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { CartItem } from "@/lib/types";
+import { clean, isEmail } from "@/lib/validation";
 
-// Creates an order + order_items in Supabase.
-// Payment gateway (Paystack/Flutterwave) integration hooks in here later —
-// for now this records the order as "pending".
+// Places an order through the database function `place_order()`
+// (see supabase/002_hardening_and_admin.sql).
+//
+// IMPORTANT: the browser only sends WHICH products and HOW MANY. Prices and
+// stock are looked up and checked inside the database, so a customer can't
+// change a price by editing the request.
+//
+// Payment gateway (Paystack/Flutterwave) hooks in here later: create the
+// order as "pending", start the payment, then mark it "paid" from a webhook.
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { buyerName, buyerEmail, buyerPhone, deliveryAddress, items } = body as {
-      buyerName: string;
-      buyerEmail: string;
-      buyerPhone: string;
-      deliveryAddress: string;
-      items: CartItem[];
-    };
 
-    if (!buyerName || !buyerEmail || !items?.length) {
+    const buyerName = clean(body.buyerName, 200);
+    const buyerEmail = clean(body.buyerEmail, 320);
+    const buyerPhone = clean(body.buyerPhone, 40);
+    const deliveryAddress = clean(body.deliveryAddress, 1000);
+
+    if (!buyerName || !isEmail(buyerEmail) || !deliveryAddress) {
       return NextResponse.json(
-        { error: "Missing required checkout fields." },
+        { error: "Please fill in your name, a valid email, and delivery address." },
         { status: 400 }
       );
     }
 
-    const supabase = await createClient();
-
-    const totalAmount = items.reduce(
-      (sum, i) => sum + i.product.price * i.quantity,
-      0
-    );
-
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        buyer_name: buyerName,
-        buyer_email: buyerEmail,
-        buyer_phone: buyerPhone || null,
-        delivery_address: deliveryAddress || null,
-        total_amount: totalAmount,
-        status: "pending",
-      })
-      .select()
-      .single();
-
-    if (orderError || !order) {
-      throw orderError || new Error("Failed to create order.");
+    const rawItems: unknown = body.items;
+    if (!Array.isArray(rawItems) || rawItems.length === 0 || rawItems.length > 50) {
+      return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
     }
 
-    const orderItems = items.map((i) => ({
-      order_id: order.id,
-      product_id: i.product.id,
-      quantity: i.quantity,
-      unit_price: i.product.price,
+    const items = rawItems.map((i: { product?: { id?: unknown }; quantity?: unknown }) => ({
+      product_id: i?.product?.id,
+      quantity: Number(i?.quantity),
     }));
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
+    if (
+      items.some(
+        (i) =>
+          typeof i.product_id !== "string" ||
+          !Number.isInteger(i.quantity) ||
+          i.quantity < 1 ||
+          i.quantity > 1000
+      )
+    ) {
+      return NextResponse.json({ error: "Your cart has an invalid item." }, { status: 400 });
+    }
 
-    if (itemsError) throw itemsError;
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("place_order", {
+      p_name: buyerName,
+      p_email: buyerEmail,
+      p_phone: buyerPhone,
+      p_address: deliveryAddress,
+      p_items: items,
+    });
 
-    return NextResponse.json({ orderId: order.id });
+    if (error) {
+      // Messages raised on purpose inside place_order() are safe to show
+      // (stock / availability). Anything else is logged and hidden.
+      const friendly =
+        /left in stock|no longer available|Invalid quantity|cart is empty/i.test(error.message);
+      if (friendly) {
+        return NextResponse.json({ error: error.message }, { status: 409 });
+      }
+      throw error;
+    }
+
+    const result = data as { order_id: string; total: number };
+    return NextResponse.json({ orderId: result.order_id, total: result.total });
   } catch (err) {
     console.error("Checkout error:", err);
     return NextResponse.json(

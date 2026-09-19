@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Product, Category } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
+import PageHeader from "@/components/PageHeader";
+import FilterChips from "@/components/FilterChips";
 
 export default async function FoodMartCategoryPage({
   params,
@@ -19,34 +20,44 @@ export default async function FoodMartCategoryPage({
     .single();
 
   if (!category) notFound();
+  const cat = category as Category;
 
-  const { data: products } = await supabase
-    .from("products")
-    .select("*, category:categories(*)")
-    .eq("is_active", true)
-    .eq("category_id", (category as Category).id)
-    .order("created_at", { ascending: false });
+  const [{ data: products }, { data: categories }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("*, category:categories(*)")
+      .eq("is_active", true)
+      .eq("category_id", cat.id)
+      .order("created_at", { ascending: false }),
+    supabase.from("categories").select("*").in("type", ["product", "both"]).order("name"),
+  ]);
+
+  const chips = [
+    { label: "All", href: "/food-mart" },
+    ...((categories as Category[] | null) ?? []).map((c) => ({
+      label: c.name,
+      href: `/food-mart/${c.slug}`,
+    })),
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto px-5 py-12">
-      <Link href="/food-mart" className="text-sm text-kb-gold-dark hover:underline">
-        ← All categories
-      </Link>
-      <h1 className="font-display text-3xl sm:text-4xl font-bold text-kb-charcoal mt-3 mb-10">
-        {(category as Category).name}
-      </h1>
+    <>
+      <PageHeader title={cat.name} crumbs={[{ label: "Food Mart", href: "/food-mart" }]} />
+      <div className="mx-auto max-w-6xl px-5 py-12">
+        <FilterChips items={chips} activeHref={`/food-mart/${cat.slug}`} />
 
-      {products && products.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {(products as Product[]).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-24 border border-dashed border-kb-green/30 rounded-2xl">
-          <p className="text-kb-charcoal/60">No products listed in this category yet.</p>
-        </div>
-      )}
-    </div>
+        {products && products.length > 0 ? (
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            {(products as Product[]).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
+            <p className="text-kb-charcoal/60">No products listed in this category yet.</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
