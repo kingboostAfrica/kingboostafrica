@@ -3,7 +3,7 @@ import { confirmPayment, verifyWebhookSignature } from "@/lib/paystack";
 
 // Paystack calls this after every payment. Set the URL in the Paystack dashboard:
 //   Settings > API Keys & Webhooks > Live/Test Webhook URL
-//   https://www.kingboostfarms.com.ng/api/paystack/webhook
+//   https://kingboostfarms.com.ng/api/paystack/webhook
 export async function POST(request: Request) {
   const raw = await request.text();
 

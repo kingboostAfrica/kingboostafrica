@@ -82,8 +82,8 @@ export default function Footer() {
             </li>
             <li className="flex gap-3">
               <Globe size={18} className="mt-0.5 shrink-0 text-kb-gold" aria-hidden="true" />
-              <a href="https://www.kingboostfarms.com.ng" className={linkCls}>
-                www.kingboostfarms.com.ng
+              <a href="https://kingboostfarms.com.ng" className={linkCls}>
+                kingboostfarms.com.ng
               </a>
             </li>
           </ul>

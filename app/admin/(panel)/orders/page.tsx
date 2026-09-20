@@ -111,6 +111,7 @@ export default async function AdminOrdersPage() {
                     <div className="mt-2 flex justify-end">
                       <StatusSelect
                         table="orders"
+                        endpoint="/api/admin/orders/status"
                         id={o.id}
                         value={o.status}
                         options={o.status === "cancelled" ? ["cancelled"] : STATUSES}

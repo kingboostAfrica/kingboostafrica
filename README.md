@@ -48,7 +48,7 @@ Then, in Supabase → Authentication → Sign In / Providers, **turn off "Allow 
 
 Set `PAYSTACK_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY` in Netlify and run `supabase/004_paystack_payments.sql`.
 Checkout then offers "Pay now" next to "Pay on delivery". In the Paystack dashboard set the webhook URL to
-`https://www.kingboostfarms.com.ng/api/paystack/webhook`. Payments are always re-checked with Paystack on the
+`https://kingboostfarms.com.ng/api/paystack/webhook`. Payments are always re-checked with Paystack on the
 server (amount, currency, status) before an order is marked paid; unpaid online orders release their stock after 3 hours.
 
 ## How checkout works

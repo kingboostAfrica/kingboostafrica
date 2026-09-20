@@ -81,3 +81,50 @@ export async function alertOwnerPaymentProblem(orderId: string, message: string)
     }),
   });
 }
+
+/** Tell the customer their order was cancelled. Returns true if an email was sent. */
+export async function sendOrderCancelledEmail(
+  db: SupabaseClient,
+  orderId: string,
+  previousStatus: string
+): Promise<boolean> {
+  // Customers can only be emailed once a verified sender (EMAIL_FROM) is configured.
+  if (!canEmailCustomers()) return false;
+
+  const { data: order } = await db.from("orders").select("*").eq("id", orderId).maybeSingle();
+  if (!order) return false;
+  const { data: items } = await db.from("order_items").select("*").eq("order_id", orderId);
+  const productIds = Array.from(new Set((items ?? []).map((i: { product_id: string }) => i.product_id)));
+  const { data: products } = productIds.length
+    ? await db.from("products").select("id, name, unit").in("id", productIds)
+    : { data: [] as { id: string; name: string; unit: string }[] };
+  const byId = new Map((products ?? []).map((p: { id: string; name: string; unit: string }) => [p.id, p]));
+
+  const lines: OrderLine[] = (items ?? []).map(
+    (i: { product_id: string; quantity: number; unit_price: number }) => ({
+      name: byId.get(i.product_id)?.name ?? "Item",
+      unit: byId.get(i.product_id)?.unit ?? "",
+      quantity: i.quantity,
+      price: Number(i.unit_price),
+    })
+  );
+  const total = Number(order.total_amount);
+  const ref = String(order.id).slice(0, 8).toUpperCase();
+
+  // Online orders that were already paid need a refund conversation; everything else costs nothing.
+  const paidOnline = order.payment_method === "online" && previousStatus !== "pending";
+  const moneyNote = paidOnline
+    ? `You paid <strong>${naira(total)}</strong> online for this order. Please reply to this email and we will arrange your refund.`
+    : "You have not been charged for this order.";
+
+  return sendEmail({
+    to: order.buyer_email,
+    replyTo: notifyAddress(),
+    subject: `Your order #${ref} has been cancelled`,
+    html: emailLayout(
+      "Your order has been cancelled",
+      `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Hello ${escapeHtml(String(order.buyer_name).split(" ")[0])}, your order <strong>#${escapeHtml(ref)}</strong> has been cancelled.</p>${orderTable(lines, total)}<p style="font-size:14px;line-height:1.6;margin:12px 0 0;">${moneyNote}</p><p style="font-size:13px;color:#6b756f;">If you were not expecting this, or would like to order again, just reply to this email.</p>`,
+      { label: "Visit the Food Mart", href: adminUrl("/food-mart") }
+    ),
+  });
+}

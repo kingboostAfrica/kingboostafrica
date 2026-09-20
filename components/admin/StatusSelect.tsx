@@ -11,6 +11,7 @@ export default function StatusSelect({
   value,
   options,
   confirmOn,
+  endpoint,
 }: {
   table: string;
   id: string;
@@ -18,18 +19,44 @@ export default function StatusSelect({
   options: string[];
   // Ask before setting this status, e.g. { value: "cancelled", message: "..." }
   confirmOn?: { value: string; message: string };
+  // When set, the change goes through this server endpoint (which can also send emails)
+  endpoint?: string;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState(value);
   const [error, setError] = useState("");
+  const [note, setNote] = useState("");
 
   function handleChange(next: string) {
     if (next === status) return;
     if (confirmOn && next === confirmOn.value && !window.confirm(confirmOn.message)) return;
     setError("");
+    setNote("");
     startTransition(async () => {
+      if (endpoint) {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: id, status: next }),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setError(json.error ?? "Could not update the order.");
+            return;
+          }
+          if (json.emailed) setNote("Customer notified by email.");
+        } catch {
+          setError("Could not reach the server.");
+          return;
+        }
+        setStatus(next);
+        router.refresh();
+        return;
+      }
+
       const { error: updError } = await supabase
         .from(table)
         .update({ status: next })
@@ -58,6 +85,7 @@ export default function StatusSelect({
         ))}
       </select>
       {error && <p className="text-[11px] text-red-600 mt-1 max-w-48">{error}</p>}
+      {note && <p className="text-[11px] text-kb-green mt-1 max-w-48">{note}</p>}
     </div>
   );
 }
