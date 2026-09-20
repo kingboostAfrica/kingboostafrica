@@ -11,6 +11,7 @@ import {
   Inbox,
   ShoppingCart,
   Tags,
+  Settings,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -24,6 +25,7 @@ const navLinks = [
   { href: "/admin/gallery", label: "Gallery", icon: Images },
   { href: "/admin/content", label: "Site Content", icon: FileText },
   { href: "/admin/messages", label: "Messages", icon: Inbox },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export default async function AdminLayout({

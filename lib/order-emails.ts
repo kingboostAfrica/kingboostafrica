@@ -11,8 +11,20 @@ import {
   notifyAddress,
   orderTable,
   sendEmail,
+  type OrderExtras,
   type OrderLine,
 } from "@/lib/email";
+
+/** Pull the subtotal / VAT / delivery breakdown out of an order row (older orders have none). */
+export function extrasFromOrder(order: Record<string, unknown>): OrderExtras | undefined {
+  if (order.subtotal_amount == null) return undefined;
+  return {
+    subtotal: Number(order.subtotal_amount),
+    vat: Number(order.vat_amount ?? 0),
+    vatPercent: Number(order.vat_percent ?? 0),
+    delivery: Number(order.delivery_fee ?? 0),
+  };
+}
 
 export async function sendPaidOrderEmails(admin: SupabaseClient, orderId: string) {
   if (!process.env.RESEND_API_KEY) return;
@@ -36,7 +48,7 @@ export async function sendPaidOrderEmails(admin: SupabaseClient, orderId: string
   );
   const total = Number(order.total_amount);
   const ref = String(order.id).slice(0, 8).toUpperCase();
-  const table = orderTable(lines, total);
+  const table = orderTable(lines, total, extrasFromOrder(order));
 
   await sendEmail({
     to: notifyAddress(),
@@ -50,8 +62,9 @@ export async function sendPaidOrderEmails(admin: SupabaseClient, orderId: string
         ["Customer", order.buyer_name],
         ["Phone", order.buyer_phone],
         ["Email", order.buyer_email],
-        ["Deliver to", order.delivery_address],
-      ])}<div style="height:12px"></div>${table}<p style="font-size:13px;color:#6b756f;">No payment to collect on delivery. Reply to this email to reach the customer.</p>`,
+        ["Fulfilment", order.fulfilment_method === "pickup" ? "Self pickup" : `Delivery${order.delivery_zone ? ` — ${order.delivery_zone}` : ""}`],
+        [order.fulfilment_method === "pickup" ? "Pick up at" : "Deliver to", order.delivery_address],
+      ])}<div style="height:12px"></div>${table}<p style="font-size:13px;color:#6b756f;">No payment to collect. Reply to this email to reach the customer.</p>`,
       { label: "Open orders in admin", href: adminUrl("/admin/orders") }
     ),
   });
@@ -63,7 +76,7 @@ export async function sendPaidOrderEmails(admin: SupabaseClient, orderId: string
       subject: `Payment received — order #${ref}`,
       html: emailLayout(
         `Thank you, ${String(order.buyer_name).split(" ")[0]}!`,
-        `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">We have received your payment for order <strong>#${escapeHtml(ref)}</strong>. We will contact you shortly to arrange delivery.</p>${table}<p style="font-size:13px;color:#6b756f;">Delivering to: ${escapeHtml(order.delivery_address)}</p><p style="font-size:13px;color:#6b756f;">Questions? Just reply to this email.</p>`
+        `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">We have received your payment for order <strong>#${escapeHtml(ref)}</strong>. ${order.fulfilment_method === "pickup" ? "We will let you know as soon as it is ready to collect." : "We will contact you shortly to arrange delivery."}</p>${table}<p style="font-size:13px;color:#6b756f;">${order.fulfilment_method === "pickup" ? "Pick up from" : "Delivering to"}: ${escapeHtml(String(order.delivery_address).replace(/^Self pickup — /, ""))}</p><p style="font-size:13px;color:#6b756f;">Questions, or need to cancel? Just reply to this email.</p>`
       ),
     });
   }
@@ -123,8 +136,32 @@ export async function sendOrderCancelledEmail(
     subject: `Your order #${ref} has been cancelled`,
     html: emailLayout(
       "Your order has been cancelled",
-      `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Hello ${escapeHtml(String(order.buyer_name).split(" ")[0])}, your order <strong>#${escapeHtml(ref)}</strong> has been cancelled.</p>${orderTable(lines, total)}<p style="font-size:14px;line-height:1.6;margin:12px 0 0;">${moneyNote}</p><p style="font-size:13px;color:#6b756f;">If you were not expecting this, or would like to order again, just reply to this email.</p>`,
+      `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Hello ${escapeHtml(String(order.buyer_name).split(" ")[0])}, your order <strong>#${escapeHtml(ref)}</strong> has been cancelled.</p>${orderTable(lines, total, extrasFromOrder(order))}<p style="font-size:14px;line-height:1.6;margin:12px 0 0;">${moneyNote}</p><p style="font-size:13px;color:#6b756f;">If you were not expecting this, or would like to order again, just reply to this email.</p>`,
       { label: "Visit the Food Mart", href: adminUrl("/food-mart") }
+    ),
+  });
+}
+
+/** Tell the owner that a CUSTOMER cancelled their own order (stock has already been put back). */
+export async function alertOwnerCustomerCancelled(db: SupabaseClient, orderId: string) {
+  if (!process.env.RESEND_API_KEY) return false;
+  const { data: order } = await db.from("orders").select("*").eq("id", orderId).maybeSingle();
+  if (!order) return false;
+  const ref = String(order.id).slice(0, 8).toUpperCase();
+  return sendEmail({
+    to: notifyAddress(),
+    replyTo: order.buyer_email,
+    subject: `Customer cancelled order #${ref} — ${naira(Number(order.total_amount))} (${order.buyer_name})`,
+    html: emailLayout(
+      "A customer cancelled their order",
+      `${detailRows([
+        ["Order", `#${ref}`],
+        ["Customer", order.buyer_name],
+        ["Phone", order.buyer_phone],
+        ["Email", order.buyer_email],
+        ["Total", naira(Number(order.total_amount))],
+      ])}<p style="font-size:13px;color:#6b756f;">The items have been put back into stock automatically.</p>`,
+      { label: "Open orders in admin", href: adminUrl("/admin/orders") }
     ),
   });
 }

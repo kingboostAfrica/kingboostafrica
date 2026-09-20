@@ -3,15 +3,17 @@ import { CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import ClearCart from "@/components/ClearCart";
 import { confirmPayment } from "@/lib/paystack";
+import { cancelEnabled, isToken } from "@/lib/order-cancel";
+import { formatNaira } from "@/lib/pricing";
 
 export const metadata = { title: "Order — KingBoostFarms" };
 
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ order?: string; total?: string; reference?: string; trxref?: string }>;
+  searchParams: Promise<{ order?: string; total?: string; reference?: string; trxref?: string; t?: string; pickup?: string }>;
 }) {
-  const { order, total, reference, trxref } = await searchParams;
+  const { order, total, reference, trxref, t, pickup } = await searchParams;
   const ref = reference || trxref;
 
   // ───── Paid online: ask Paystack, never trust the URL ─────
@@ -38,7 +40,7 @@ export default async function CheckoutSuccessPage({
             )}
             {result.total ? (
               <p className="mb-8 text-sm text-kb-charcoal/70">
-                Amount paid: <span className="font-semibold text-kb-green">₦{result.total.toLocaleString()}</span>
+                Amount paid: <span className="font-semibold text-kb-green">{formatNaira(result.total)}</span>
               </p>
             ) : null}
             <Link href="/food-mart" className="btn btn-primary">Continue shopping</Link>
@@ -116,10 +118,18 @@ export default async function CheckoutSuccessPage({
         )}
         {Number.isFinite(totalNum) && totalNum > 0 && (
           <p className="mb-8 text-sm text-kb-charcoal/70">
-            Order total: <span className="font-semibold text-kb-green">₦{totalNum.toLocaleString()}</span> — payable on delivery.
+            Order total: <span className="font-semibold text-kb-green">{formatNaira(totalNum)}</span> — {pickup === "1" ? "payable when you collect." : "payable on delivery."}
           </p>
         )}
         <Link href="/food-mart" className="btn btn-primary">Continue shopping</Link>
+        {cancelEnabled() && isToken(t) && (
+          <p className="mt-6 text-sm text-kb-charcoal/60">
+            Changed your mind?{" "}
+            <Link href={`/order/cancel/${t}`} className="font-semibold text-kb-green hover:underline">
+              Cancel this order
+            </Link>
+          </p>
+        )}
       </div>
     </>
   );

@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin";
 import type { Order, OrderItem } from "@/lib/types";
 import StatusSelect from "@/components/admin/StatusSelect";
 import { MapPin, Phone, MessageCircle } from "lucide-react";
+import { formatNaira } from "@/lib/pricing";
 
 const STATUSES = ["pending", "paid", "shipped", "completed", "cancelled"];
 
@@ -92,7 +93,9 @@ export default async function AdminOrdersPage() {
                         o.status === "pending" ? (
                           <span className="text-kb-gold-dark">Online payment — waiting for payment</span>
                         ) : o.status === "cancelled" ? (
-                          <span className="text-red-600">Online order — cancelled</span>
+                          <span className="text-red-600">
+                            Online order — cancelled{o.cancelled_by === "customer" ? " by customer" : ""}
+                          </span>
                         ) : (
                           <span className="text-kb-green">
                             Paid online via Paystack
@@ -100,13 +103,17 @@ export default async function AdminOrdersPage() {
                           </span>
                         )
                       ) : (
-                        <span className="text-kb-charcoal/50">Pay on delivery</span>
+                        o.status === "cancelled" && o.cancelled_by === "customer" ? (
+                          <span className="text-red-600">Pay on delivery — cancelled by customer</span>
+                        ) : (
+                          <span className="text-kb-charcoal/50">Pay on delivery</span>
+                        )
                       )}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold text-kb-green">
-                      ₦{Number(o.total_amount).toLocaleString()}
+                      {formatNaira(Number(o.total_amount))}
                     </p>
                     <div className="mt-2 flex justify-end">
                       <StatusSelect
@@ -142,7 +149,24 @@ export default async function AdminOrdersPage() {
                   })}
                 </ul>
 
+                {(Number(o.vat_amount ?? 0) > 0 || Number(o.delivery_fee ?? 0) > 0) && (
+                  <div className="mt-3 space-y-0.5 border-t border-kb-forest/10 pt-3 text-xs text-kb-charcoal/60">
+                    <p className="flex justify-between"><span>Subtotal</span><span>{formatNaira(Number(o.subtotal_amount ?? 0))}</span></p>
+                    {Number(o.vat_amount ?? 0) > 0 && (
+                      <p className="flex justify-between"><span>VAT ({Number(o.vat_percent ?? 0)}%)</span><span>{formatNaira(Number(o.vat_amount))}</span></p>
+                    )}
+                    {Number(o.delivery_fee ?? 0) > 0 && (
+                      <p className="flex justify-between"><span>Delivery</span><span>{formatNaira(Number(o.delivery_fee))}</span></p>
+                    )}
+                  </div>
+                )}
+
                 <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-kb-charcoal/60">
+                  <span className="w-full text-xs font-semibold text-kb-forest">
+                    {o.fulfilment_method === "pickup"
+                      ? "Self pickup"
+                      : `Delivery${o.delivery_zone ? ` — ${o.delivery_zone}` : ""}`}
+                  </span>
                   {o.delivery_address && (
                     <span className="flex items-start gap-1.5">
                       <MapPin size={14} className="mt-0.5 shrink-0 text-kb-green" />

@@ -44,6 +44,13 @@ export interface Order {
   payment_reference: string | null;
   payment_method?: "delivery" | "online";
   paid_at?: string | null;
+  subtotal_amount?: number | null;
+  vat_percent?: number;
+  vat_amount?: number;
+  delivery_fee?: number;
+  cancelled_by?: string | null;
+  fulfilment_method?: "delivery" | "pickup";
+  delivery_zone?: string | null;
   created_at: string;
 }
 

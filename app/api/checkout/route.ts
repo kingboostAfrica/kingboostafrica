@@ -11,6 +11,7 @@ import {
   notifyAddress,
   orderTable,
   sendEmail,
+  type OrderExtras,
   type OrderLine,
 } from "@/lib/email";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -35,10 +36,18 @@ export async function POST(request: Request) {
     const buyerEmail = clean(body.buyerEmail, 320);
     const buyerPhone = clean(body.buyerPhone, 40);
     const deliveryAddress = clean(body.deliveryAddress, 1000);
+    const method: "delivery" | "pickup" = body.fulfilmentMethod === "pickup" ? "pickup" : "delivery";
+    const zoneRaw = clean(body.zoneId, 64);
+    const zoneId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(zoneRaw) ? zoneRaw : null;
 
-    if (!buyerName || !isEmail(buyerEmail) || !deliveryAddress) {
+    if (!buyerName || !isEmail(buyerEmail) || (method === "delivery" && !deliveryAddress)) {
       return NextResponse.json(
-        { error: "Please fill in your name, a valid email, and delivery address." },
+        {
+          error:
+            method === "pickup"
+              ? "Please fill in your name and a valid email."
+              : "Please fill in your name, a valid email, and delivery address.",
+        },
         { status: 400 }
       );
     }
@@ -87,22 +96,36 @@ export async function POST(request: Request) {
       p_name: buyerName,
       p_email: buyerEmail,
       p_phone: buyerPhone,
-      p_address: deliveryAddress,
+      p_address: method === "pickup" ? "" : deliveryAddress,
       p_items: items,
+      p_method: method,
+      p_zone_id: method === "delivery" ? zoneId : null,
     });
 
     if (error) {
       // Messages raised on purpose inside place_order() are safe to show
       // (stock / availability). Anything else is logged and hidden.
       const friendly =
-        /left in stock|no longer available|Invalid quantity|cart is empty/i.test(error.message);
+        /left in stock|no longer available|Invalid quantity|cart is empty|delivery area|Self pickup is not available|Invalid delivery option|Delivery address is required/i.test(error.message);
       if (friendly) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }
       throw error;
     }
 
-    const result = data as { order_id: string; total: number };
+    const result = data as {
+      order_id: string;
+      total: number;
+      subtotal?: number;
+      vat?: number;
+      vat_percent?: number;
+      delivery?: number;
+      method?: string;
+      zone?: string | null;
+      address?: string;
+      pickup_instructions?: string | null;
+      cancel_token?: string;
+    };
     revalidateCatalog(); // stock just went down
 
     // ---- Pay online: hand the customer to Paystack. Emails are sent once payment is confirmed. ----
@@ -147,6 +170,22 @@ export async function POST(request: Request) {
         supabase,
         orderId: result.order_id,
         total: Number(result.total),
+        extras:
+          result.subtotal == null
+            ? undefined
+            : {
+                subtotal: Number(result.subtotal),
+                vat: Number(result.vat ?? 0),
+                vatPercent: Number(result.vat_percent ?? 0),
+                delivery: Number(result.delivery ?? 0),
+              },
+        cancelToken: result.cancel_token,
+        fulfilment: {
+          method: result.method === "pickup" ? "pickup" : "delivery",
+          zone: result.zone ?? null,
+          address: result.address ?? deliveryAddress,
+          pickupInstructions: result.pickup_instructions ?? null,
+        },
         buyerName,
         buyerEmail,
         buyerPhone,
@@ -157,7 +196,11 @@ export async function POST(request: Request) {
       console.error("Order email error:", mailErr);
     }
 
-    return NextResponse.json({ orderId: result.order_id, total: result.total });
+    return NextResponse.json({
+      orderId: result.order_id,
+      total: result.total,
+      cancelToken: process.env.SUPABASE_SERVICE_ROLE_KEY ? result.cancel_token : undefined,
+    });
   } catch (err) {
     console.error("Checkout error:", err);
     return NextResponse.json(
@@ -171,6 +214,9 @@ async function sendOrderEmails(o: {
   supabase: Awaited<ReturnType<typeof createClient>>;
   orderId: string;
   total: number;
+  extras?: OrderExtras;
+  cancelToken?: string;
+  fulfilment: { method: "delivery" | "pickup"; zone: string | null; address: string; pickupInstructions: string | null };
   buyerName: string;
   buyerEmail: string;
   buyerPhone: string;
@@ -194,7 +240,7 @@ async function sendOrderEmails(o: {
   });
 
   const ref = o.orderId.slice(0, 8).toUpperCase();
-  const table = orderTable(lines, o.total);
+  const table = orderTable(lines, o.total, o.extras);
 
   // 1) Alert to the owner
   await sendEmail({
@@ -208,21 +254,33 @@ async function sendOrderEmails(o: {
         ["Customer", o.buyerName],
         ["Phone", o.buyerPhone],
         ["Email", o.buyerEmail],
-        ["Deliver to", o.deliveryAddress],
-      ])}<div style="height:12px"></div>${table}<p style="font-size:13px;color:#6b756f;">Payment is collected on delivery. Reply to this email to reach the customer.</p>`,
+        ["Fulfilment", o.fulfilment.method === "pickup" ? "Self pickup" : `Delivery${o.fulfilment.zone ? ` — ${o.fulfilment.zone}` : ""}`],
+        [o.fulfilment.method === "pickup" ? "Pick up at" : "Deliver to", o.fulfilment.address],
+      ])}<div style="height:12px"></div>${table}<p style="font-size:13px;color:#6b756f;">${o.fulfilment.method === "pickup" ? "Payment is collected when the customer picks up." : "Payment is collected on delivery."} Reply to this email to reach the customer.</p>`,
       { label: "Open orders in admin", href: adminUrl("/admin/orders") }
     ),
   });
 
   // 2) Confirmation to the customer (only once a verified sender domain is configured)
   if (canEmailCustomers()) {
+    const pickingUp = o.fulfilment.method === "pickup";
+    const customerNextStep = pickingUp
+      ? "will let you know as soon as it is ready to collect. You pay when you collect it."
+      : "will contact you shortly to confirm delivery. You pay on delivery.";
+    const fulfilmentBlock = pickingUp
+      ? `<p style="font-size:13px;color:#6b756f;">Pick up from: ${escapeHtml(o.fulfilment.address.replace(/^Self pickup — /, ""))}${o.fulfilment.pickupInstructions ? `<br>${escapeHtml(o.fulfilment.pickupInstructions)}` : ""}</p>`
+      : `<p style="font-size:13px;color:#6b756f;">Delivering to: ${escapeHtml(o.fulfilment.address)}${o.fulfilment.zone ? ` (${escapeHtml(o.fulfilment.zone)})` : ""}</p>`;
+    const cancelBlock =
+      o.cancelToken && process.env.SUPABASE_SERVICE_ROLE_KEY
+        ? `<p style="font-size:13px;color:#6b756f;">Changed your mind? <a href="${escapeHtml(adminUrl(`/order/cancel/${o.cancelToken}`))}" style="color:#2e7d32;font-weight:bold;">Cancel this order</a> (possible until we start processing it).</p>`
+        : "";
     await sendEmail({
       to: o.buyerEmail,
       replyTo: notifyAddress(),
       subject: `We received your order #${ref}`,
       html: emailLayout(
         `Thank you, ${o.buyerName.split(" ")[0]}!`,
-        `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">We have received your order <strong>#${ref}</strong> and will contact you shortly to confirm delivery. You pay on delivery.</p>${table}<p style="font-size:13px;color:#6b756f;">Delivering to: ${escapeHtml(o.deliveryAddress)}</p><p style="font-size:13px;color:#6b756f;">Questions? Just reply to this email.</p>`
+        `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">We have received your order <strong>#${ref}</strong> and ${customerNextStep}</p>${table}${fulfilmentBlock}${cancelBlock}<p style="font-size:13px;color:#6b756f;">Questions? Just reply to this email.</p>`
       ),
     });
   }

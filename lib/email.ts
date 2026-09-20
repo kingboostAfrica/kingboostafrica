@@ -12,6 +12,7 @@
 // Sending never blocks or breaks an order: every failure is caught and logged.
 
 import { SITE_URL } from "@/lib/site";
+import { formatNaira } from "@/lib/pricing";
 
 const TEST_FROM = "KingBoostFarms <onboarding@resend.dev>";
 
@@ -24,7 +25,7 @@ export function escapeHtml(value: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
-export const naira = (n: number) => `₦${Number(n).toLocaleString("en-NG")}`;
+export const naira = formatNaira;
 
 export function notifyAddress(): string {
   return process.env.ORDER_NOTIFY_EMAIL || "kingboost.africa@gmail.com";
@@ -35,14 +36,19 @@ export function canEmailCustomers(): boolean {
   return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
 }
 
-export async function sendEmail(opts: {
+export type SendResult = { ok: boolean; status?: number; message?: string };
+
+/** Like sendEmail, but tells you exactly what happened (used by the admin "Email" test page). */
+export async function sendEmailDetailed(opts: {
   to: string;
   subject: string;
   html: string;
   replyTo?: string;
-}): Promise<boolean> {
+}): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false; // emails not set up yet — quietly skip
+  if (!apiKey) {
+    return { ok: false, message: "RESEND_API_KEY is not set in Netlify (or the site has not been redeployed since you added it)." };
+  }
 
   try {
     const res = await fetch(process.env.RESEND_API_URL || "https://api.resend.com/emails", {
@@ -61,14 +67,42 @@ export async function sendEmail(opts: {
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
-      console.error("Email send failed:", res.status, await res.text().catch(() => ""));
-      return false;
+      const text = await res.text().catch(() => "");
+      let message = text;
+      try {
+        message = JSON.parse(text)?.message ?? text;
+      } catch {
+        /* keep raw text */
+      }
+      console.error("Email send failed:", res.status, message);
+      return { ok: false, status: res.status, message };
     }
-    return true;
+    return { ok: true, status: res.status };
   } catch (err) {
     console.error("Email send error:", err);
-    return false;
+    return { ok: false, message: err instanceof Error ? err.message : "Could not reach Resend." };
   }
+}
+
+export async function sendEmail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false; // emails not set up yet — quietly skip
+  return (await sendEmailDetailed(opts)).ok;
+}
+
+/** What the server currently believes about email setup (no secrets). */
+export function emailStatus() {
+  return {
+    hasKey: Boolean(process.env.RESEND_API_KEY),
+    from: process.env.EMAIL_FROM || TEST_FROM,
+    usingTestSender: !process.env.EMAIL_FROM,
+    notify: notifyAddress(),
+    customerEmails: canEmailCustomers(),
+  };
 }
 
 /** Simple branded wrapper that works in email clients (inline styles, no images required). */
@@ -112,7 +146,14 @@ export function detailRows(rows: [string, string | null | undefined][]): string 
 
 export type OrderLine = { name: string; unit: string; quantity: number; price: number };
 
-export function orderTable(lines: OrderLine[], total: number): string {
+export type OrderExtras = {
+  subtotal?: number | null;
+  vat?: number;
+  vatPercent?: number;
+  delivery?: number;
+};
+
+export function orderTable(lines: OrderLine[], total: number, extras?: OrderExtras): string {
   const rows = lines
     .map(
       (l) =>
@@ -122,8 +163,21 @@ export function orderTable(lines: OrderLine[], total: number): string {
         </tr>`
     )
     .join("");
+
+  const vat = extras?.vat ?? 0;
+  const delivery = extras?.delivery ?? 0;
+  const line = (label: string, value: number) =>
+    `<tr><td style="padding:6px 0 0;color:#6b756f;">${label}</td><td align="right" style="padding:6px 0 0;color:#6b756f;white-space:nowrap;">${naira(value)}</td></tr>`;
+  const breakdown =
+    vat > 0 || delivery > 0
+      ? line("Subtotal", extras?.subtotal ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0)) +
+        (vat > 0 ? line(`VAT (${extras?.vatPercent ?? ""}%)`, vat) : "") +
+        (delivery > 0 ? line("Delivery", delivery) : "")
+      : "";
+
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin:8px 0;">
     ${rows}
+    ${breakdown}
     <tr><td style="padding:12px 0 0;font-weight:bold;">Total</td><td align="right" style="padding:12px 0 0;font-weight:bold;color:#2e7d32;font-size:16px;">${naira(total)}</td></tr>
   </table>`;
 }

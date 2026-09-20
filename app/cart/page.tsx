@@ -81,7 +81,7 @@ export default function CartPage() {
             <p className="font-semibold text-kb-charcoal">Total</p>
             <p className="text-2xl font-bold text-kb-green">₦{total.toLocaleString()}</p>
           </div>
-          <p className="mt-2 text-sm text-kb-charcoal/60">Payment is collected on delivery.</p>
+          <p className="mt-2 text-sm text-kb-charcoal/60">Delivery fee and VAT, if any, are added at checkout.</p>
           <Link href="/checkout" className="btn btn-primary mt-6 w-full">
             Proceed to checkout
           </Link>
