@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Course } from "@/lib/types";
 import { Field, ImageUploader, inputCls, slugify } from "@/components/admin/ui";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 export default function CourseForm({ initial }: { initial?: Course }) {
   const router = useRouter();
@@ -58,6 +59,7 @@ export default function CourseForm({ initial }: { initial?: Course }) {
       return;
     }
 
+    revalidateSite();
     router.push("/admin/courses");
     router.refresh();
   }

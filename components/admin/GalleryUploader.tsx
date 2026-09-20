@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/types";
 import { Field, ImageUploader, inputCls } from "@/components/admin/ui";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 export default function GalleryUploader({ categories }: { categories: Category[] }) {
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function GalleryUploader({ categories }: { categories: Category[]
       setError(insError.message);
       return;
     }
+    revalidateSite();
     setImages([]);
     setCaption("");
     router.refresh();

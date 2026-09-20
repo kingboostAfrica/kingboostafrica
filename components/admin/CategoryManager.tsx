@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/types";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { inputCls, slugify } from "@/components/admin/ui";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 const TYPE_LABEL: Record<Category["type"], string> = {
   product: "Food Mart",
@@ -41,6 +42,7 @@ export default function CategoryManager({ categories }: { categories: Category[]
       );
       return;
     }
+    revalidateSite();
     setName("");
     router.refresh();
   }

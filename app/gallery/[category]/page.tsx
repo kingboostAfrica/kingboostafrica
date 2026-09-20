@@ -1,9 +1,17 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { GalleryItem, Category } from "@/lib/types";
 import PageHeader from "@/components/PageHeader";
 import FilterChips from "@/components/FilterChips";
+
+// Served from a saved copy and rebuilt at most every 120 seconds (and instantly after admin edits).
+export const revalidate = 120;
+
+// No pages are built ahead of time; each one is built on first visit, then reused.
+export function generateStaticParams() {
+  return [];
+}
 
 export default async function GalleryCategoryPage({
   params,
@@ -11,7 +19,7 @@ export default async function GalleryCategoryPage({
   params: Promise<{ category: string }>;
 }) {
   const { category: categorySlug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { data: category } = await supabase
     .from("categories")

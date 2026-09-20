@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Category, Product } from "@/lib/types";
 import { Field, ImageUploader, inputCls, slugify } from "@/components/admin/ui";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 export default function ProductForm({
   categories,
@@ -67,6 +68,7 @@ export default function ProductForm({
       return;
     }
 
+    revalidateSite();
     router.push("/admin/products");
     router.refresh();
   }

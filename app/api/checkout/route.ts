@@ -14,6 +14,7 @@ import {
   type OrderLine,
 } from "@/lib/email";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { revalidateCatalog } from "@/lib/revalidate-server";
 import { SITE_URL } from "@/lib/site";
 import { initializeTransaction, makeReference, paystackEnabled, toKobo } from "@/lib/paystack";
 
@@ -102,6 +103,7 @@ export async function POST(request: Request) {
     }
 
     const result = data as { order_id: string; total: number };
+    revalidateCatalog(); // stock just went down
 
     // ---- Pay online: hand the customer to Paystack. Emails are sent once payment is confirmed. ----
     if (wantsOnline) {

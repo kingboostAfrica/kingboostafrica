@@ -1,8 +1,11 @@
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { GalleryItem, Category } from "@/lib/types";
 import PageHeader from "@/components/PageHeader";
 import FilterChips from "@/components/FilterChips";
+
+// Served from a saved copy and rebuilt at most every 120 seconds (and instantly after admin edits).
+export const revalidate = 120;
 
 export const metadata = {
   title: "Gallery — KingBoostFarms",
@@ -10,7 +13,7 @@ export const metadata = {
 };
 
 export default async function GalleryPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const [{ data: items }, { data: categories }] = await Promise.all([
     supabase

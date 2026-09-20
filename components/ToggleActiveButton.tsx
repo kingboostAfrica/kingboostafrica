@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 export default function ToggleActiveButton({
   table,
@@ -31,6 +32,7 @@ export default function ToggleActiveButton({
         setError(updError.message);
         return;
       }
+      revalidateSite();
       setActive(!active);
       router.refresh();
     });

@@ -1,5 +1,4 @@
-// Adjust this import if your Supabase server client lives at a different path.
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export type ContentRow = {
   id: string;
@@ -14,7 +13,7 @@ export type ContentRow = {
 };
 
 export async function getPageContent(page: string): Promise<ContentRow[]> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("page_content")
     .select("*")

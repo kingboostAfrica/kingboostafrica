@@ -1,11 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Product } from "@/lib/types";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
+
+// Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
+export const revalidate = 60;
+
+// No pages are built ahead of time; each one is built on first visit, then reused.
+export function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({
   params,
@@ -13,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("products")
     .select("name, description, images")
@@ -38,7 +46,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { data: product } = await supabase
     .from("products")

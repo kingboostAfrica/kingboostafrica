@@ -1,10 +1,18 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { ConsultingService } from "@/lib/types";
 import BookingForm from "@/components/BookingForm";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
+
+// Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
+export const revalidate = 300;
+
+// No pages are built ahead of time; each one is built on first visit, then reused.
+export function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({
   params,
@@ -12,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("consulting_services")
     .select("title, summary, image_url")
@@ -37,7 +45,7 @@ export default async function ConsultingServicePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const { data: service } = await supabase
     .from("consulting_services")

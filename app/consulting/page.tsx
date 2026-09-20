@@ -1,13 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import PageHeader from "@/components/PageHeader";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { ConsultingService } from "@/lib/types";
+
+// Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
+export const revalidate = 300;
 
 export const metadata = { title: "Consulting — KingBoostFarms" };
 
 export default async function ConsultingPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: services } = await supabase
     .from("consulting_services")
     .select("*")

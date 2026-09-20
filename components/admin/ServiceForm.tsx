@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { ConsultingService } from "@/lib/types";
 import { Field, ImageUploader, inputCls, slugify } from "@/components/admin/ui";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 export default function ServiceForm({ initial }: { initial?: ConsultingService }) {
   const router = useRouter();
@@ -58,6 +59,7 @@ export default function ServiceForm({ initial }: { initial?: ConsultingService }
       return;
     }
 
+    revalidateSite();
     router.push("/admin/consulting");
     router.refresh();
   }

@@ -1,8 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Product, Category } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
 import PageHeader from "@/components/PageHeader";
 import FilterChips from "@/components/FilterChips";
+
+// Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
+export const revalidate = 60;
 
 export const metadata = {
   title: "Food Mart — KingBoostFarms",
@@ -10,7 +13,7 @@ export const metadata = {
 };
 
 export default async function FoodMartPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const [{ data: products }, { data: categories }] = await Promise.all([
     supabase

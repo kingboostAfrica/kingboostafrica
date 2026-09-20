@@ -11,10 +11,13 @@ import {
   Cpu,
 } from "lucide-react";
 import { getPageContent, pick } from "@/lib/content";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Product } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
 import { FieldArt, FieldLines } from "@/components/FieldArt";
+
+// Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
+export const revalidate = 60;
 
 const verticalDefaults = [
   { key: "food-mart", slug: "food-mart", name: "Food Mart", desc: "Pure, natural, nutritious produce", icon: ShoppingCart },
@@ -33,7 +36,7 @@ const trustDefaults = [
 const trustIconMap = { ShieldCheck, Sprout, Leaf };
 
 export default async function Home() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const [rows, { data: featured }] = await Promise.all([
     getPageContent("home"),
     supabase

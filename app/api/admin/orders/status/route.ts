@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { sendOrderCancelledEmail } from "@/lib/order-emails";
+import { revalidateCatalog } from "@/lib/revalidate-server";
 
 const STATUSES = ["pending", "paid", "shipped", "completed", "cancelled"];
 
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
 
   let emailed = false;
   if (status === "cancelled") {
+    revalidateCatalog(); // stock returns to the shelf
     try {
       emailed = await sendOrderCancelledEmail(supabase, orderId, order.status);
     } catch (err) {

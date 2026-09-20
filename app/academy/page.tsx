@@ -1,14 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import PageHeader from "@/components/PageHeader";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import type { Course } from "@/lib/types";
 import { Clock } from "lucide-react";
+
+// Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
+export const revalidate = 300;
 
 export const metadata = { title: "Academy — KingBoostFarms" };
 
 export default async function AcademyPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: courses } = await supabase
     .from("courses")
     .select("*")

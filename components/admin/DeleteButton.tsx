@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 export default function DeleteButton({
   table,
@@ -32,6 +33,7 @@ export default function DeleteButton({
         );
         return;
       }
+      revalidateSite();
       router.refresh();
     });
   }

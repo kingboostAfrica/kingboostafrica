@@ -1,9 +1,12 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { SITE_URL } from "@/lib/site";
 
+// Served from a saved copy and rebuilt at most every 3600 seconds (and instantly after admin edits).
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const [{ data: products }, { data: courses }, { data: services }] = await Promise.all([
     supabase.from("products").select("slug, updated_at").eq("is_active", true),

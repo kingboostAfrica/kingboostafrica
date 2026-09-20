@@ -3,6 +3,9 @@ import InquiryForm from "@/components/InquiryForm";
 import { getPageContent, pick } from "@/lib/content";
 import PageHeader from "@/components/PageHeader";
 
+// Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
+export const revalidate = 300;
+
 export const metadata = { title: "Organics — KingBoostFarms" };
 
 const offeringDefaults = [
