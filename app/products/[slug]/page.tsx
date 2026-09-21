@@ -6,6 +6,9 @@ import type { Product } from "@/lib/types";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { getWhatsappNumber } from "@/lib/store-settings";
+import { whatsappLink } from "@/lib/whatsapp";
+import { SITE_URL } from "@/lib/site";
 
 // Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
 export const revalidate = 60;
@@ -58,6 +61,7 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const p = product as Product;
+  const whatsapp = await getWhatsappNumber();
 
   return (
     <>
@@ -98,8 +102,18 @@ export default async function ProductPage({
           {p.stock > 0 ? `${p.stock} ${p.unit}(s) available` : "Out of stock"}
         </p>
 
-        <div className="mt-8">
+        <div className="mt-8 flex flex-wrap items-center gap-4">
           <AddToCartButton product={p} />
+          {whatsapp && (
+            <a
+              href={whatsappLink(whatsapp, `Hello KingBoostFarms, I would like to ask about ${p.name} (${SITE_URL}/products/${p.slug}).`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline"
+            >
+              Ask on WhatsApp
+            </a>
+          )}
         </div>
       </div>
       </div>

@@ -4,23 +4,28 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { computeTotals, formatNaira } from "@/lib/pricing";
 import { Field, inputCls } from "@/components/admin/ui";
+import { isValidWhatsapp, normalizeWhatsapp } from "@/lib/whatsapp";
+import { revalidateSite } from "@/lib/revalidate-client";
 
 export default function StoreSettingsForm({
   vatPercent,
   pickupEnabled,
   pickupAddress,
   pickupInstructions,
+  whatsappNumber,
 }: {
   vatPercent: number;
   pickupEnabled: boolean;
   pickupAddress: string;
   pickupInstructions: string;
+  whatsappNumber: string;
 }) {
   const supabase = createClient();
   const [vat, setVat] = useState(String(vatPercent));
   const [pickupOn, setPickupOn] = useState(pickupEnabled);
   const [address, setAddress] = useState(pickupAddress);
   const [instructions, setInstructions] = useState(pickupInstructions);
+  const [whatsapp, setWhatsapp] = useState(whatsappNumber);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -38,9 +43,15 @@ export default function StoreSettingsForm({
       setMessage({ ok: false, text: "Enter the pickup address so customers know where to collect." });
       return;
     }
+    const wa = normalizeWhatsapp(whatsapp);
+    if (whatsapp.trim() && !isValidWhatsapp(wa)) {
+      setMessage({ ok: false, text: "That WhatsApp number does not look right. Example: 0803 123 4567." });
+      return;
+    }
     setSaving(true);
     setMessage(null);
     const { error } = await supabase.from("store_settings").upsert({
+      whatsapp_number: wa || null,
       id: 1,
       vat_percent: vatNum,
       pickup_enabled: pickupOn,
@@ -49,6 +60,10 @@ export default function StoreSettingsForm({
       updated_at: new Date().toISOString(),
     });
     setSaving(false);
+    if (!error) {
+      setWhatsapp(wa);
+      revalidateSite(); // so the WhatsApp buttons appear/disappear on the public pages right away
+    }
     setMessage(
       error
         ? { ok: false, text: error.message }
@@ -121,12 +136,30 @@ export default function StoreSettingsForm({
         )}
       </section>
 
+      <section>
+        <h2 className="font-display text-xl font-bold text-kb-forest mb-1">WhatsApp</h2>
+        <p className="text-sm text-kb-charcoal/60 mb-4">
+          Shows a &ldquo;Chat with us&rdquo; button on every page, an &ldquo;Ask on WhatsApp&rdquo; button on each product, and a link in the
+          footer. Leave empty to hide them.
+        </p>
+        <div className="max-w-xs">
+          <Field label="WhatsApp number">
+            <input
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="0803 123 4567"
+              className={inputCls}
+            />
+          </Field>
+        </div>
+      </section>
+
       {message && (
         <p className={`text-sm font-semibold ${message.ok ? "text-kb-green" : "text-red-600"}`}>{message.text}</p>
       )}
 
       <button type="submit" disabled={saving} className="btn btn-primary disabled:opacity-60">
-        {saving ? "Saving..." : "Save VAT and pickup settings"}
+        {saving ? "Saving..." : "Save settings"}
       </button>
     </form>
   );

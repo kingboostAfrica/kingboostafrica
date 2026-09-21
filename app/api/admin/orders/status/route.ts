@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin";
-import { sendOrderCancelledEmail } from "@/lib/order-emails";
+import { requireStaff } from "@/lib/admin";
+import { sendOrderCancelledEmail, sendOrderShippedEmail } from "@/lib/order-emails";
 import { revalidateCatalog } from "@/lib/revalidate-server";
 
 const STATUSES = ["pending", "paid", "shipped", "completed", "cancelled"];
@@ -9,7 +9,7 @@ const STATUSES = ["pending", "paid", "shipped", "completed", "cancelled"];
 export async function POST(request: Request) {
   let supabase;
   try {
-    ({ supabase } = await requireAdmin());
+    ({ supabase } = await requireStaff());
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -40,6 +40,13 @@ export async function POST(request: Request) {
       emailed = await sendOrderCancelledEmail(supabase, orderId, order.status);
     } catch (err) {
       console.error("Cancellation email error:", err);
+    }
+  }
+  if (status === "shipped") {
+    try {
+      emailed = await sendOrderShippedEmail(supabase, orderId);
+    } catch (err) {
+      console.error("Shipped email error:", err);
     }
   }
   return NextResponse.json({ ok: true, emailed });

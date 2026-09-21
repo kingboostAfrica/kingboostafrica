@@ -233,3 +233,67 @@ export async function sendCancelRequestDeclinedEmail(db: SupabaseClient, orderId
     ),
   });
 }
+
+/** Customer: the order has been marked Shipped (delivery: on its way / pickup: ready to collect). */
+export async function sendOrderShippedEmail(db: SupabaseClient, orderId: string): Promise<boolean> {
+  if (!canEmailCustomers()) return false;
+
+  const { data: order } = await db.from("orders").select("*").eq("id", orderId).maybeSingle();
+  if (!order) return false;
+  const { data: items } = await db.from("order_items").select("*").eq("order_id", orderId);
+  const ids = Array.from(new Set((items ?? []).map((i: { product_id: string }) => i.product_id)));
+  const { data: products } = ids.length
+    ? await db.from("products").select("id, name, unit").in("id", ids)
+    : { data: [] as { id: string; name: string; unit: string }[] };
+  const byId = new Map((products ?? []).map((p: { id: string; name: string; unit: string }) => [p.id, p]));
+  const lines: OrderLine[] = (items ?? []).map(
+    (i: { product_id: string; quantity: number; unit_price: number }) => ({
+      name: byId.get(i.product_id)?.name ?? "Item",
+      unit: byId.get(i.product_id)?.unit ?? "",
+      quantity: i.quantity,
+      price: Number(i.unit_price),
+    })
+  );
+
+  const total = Number(order.total_amount);
+  const ref = String(order.id).slice(0, 8).toUpperCase();
+  const first = escapeHtml(String(order.buyer_name).split(" ")[0]);
+  const pickingUp = order.fulfilment_method === "pickup";
+  const paidOnline = order.payment_method === "online" && Boolean(order.paid_at);
+  const payLine = paidOnline
+    ? "You have already paid, so there is nothing more to pay."
+    : pickingUp
+      ? `Please bring <strong>${naira(total)}</strong> to pay when you collect.`
+      : `Please have <strong>${naira(total)}</strong> ready to pay on delivery.`;
+
+  let where = "";
+  if (pickingUp) {
+    const { data: settings } = await db
+      .from("store_settings")
+      .select("pickup_address, pickup_instructions")
+      .eq("id", 1)
+      .maybeSingle();
+    const address = settings?.pickup_address || String(order.delivery_address).replace(/^Self pickup — /, "");
+    where = `<p style="font-size:14px;line-height:1.6;margin:12px 0 0;"><strong>Collect from:</strong> ${escapeHtml(address)}${
+      settings?.pickup_instructions ? `<br>${escapeHtml(settings.pickup_instructions)}` : ""
+    }</p>`;
+  } else {
+    where = `<p style="font-size:14px;line-height:1.6;margin:12px 0 0;"><strong>Delivering to:</strong> ${escapeHtml(order.delivery_address)}${
+      order.delivery_zone ? ` (${escapeHtml(order.delivery_zone)})` : ""
+    }</p>`;
+  }
+
+  return sendEmail({
+    to: order.buyer_email,
+    replyTo: notifyAddress(),
+    subject: pickingUp ? `Your order #${ref} is ready for pickup` : `Your order #${ref} is on its way`,
+    html: emailLayout(
+      pickingUp ? "Your order is ready for pickup" : "Your order is on its way",
+      `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Hello ${first}, ${
+        pickingUp
+          ? `your order <strong>#${escapeHtml(ref)}</strong> is ready to collect.`
+          : `good news, your order <strong>#${escapeHtml(ref)}</strong> is on its way to you.`
+      }</p>${orderTable(lines, total, extrasFromOrder(order))}${where}<p style="font-size:14px;line-height:1.6;margin:12px 0 0;">${payLine}</p><p style="font-size:13px;color:#6b756f;">Questions? Just reply to this email.</p>`
+    ),
+  });
+}

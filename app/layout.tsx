@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HideOnAdmin from "@/components/HideOnAdmin";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import { getWhatsappNumber } from "@/lib/store-settings";
 import { CartProvider } from "@/lib/cart-context";
 import { SITE_URL } from "@/lib/site";
 
@@ -33,7 +35,8 @@ export const metadata: Metadata = {
     "KingBoostFarms is a Nigerian agribusiness spanning Food Mart, Academy, Consulting, Agritech, and Organics — pure, natural, nutritious produce and services rooted in sustainable farming.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const whatsapp = await getWhatsappNumber();
   return (
     <html
       lang="en"
@@ -44,7 +47,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Navbar />
           <main className="flex-1">{children}</main>
           <HideOnAdmin>
-            <Footer />
+            <Footer whatsapp={whatsapp} />
+            {whatsapp && <WhatsAppButton number={whatsapp} />}
           </HideOnAdmin>
         </CartProvider>
       </body>

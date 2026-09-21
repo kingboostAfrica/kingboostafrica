@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { requireAdmin } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import {
   LayoutDashboard,
   Package,
@@ -12,20 +12,26 @@ import {
   ShoppingCart,
   Tags,
   Settings,
+  Users,
+  UserCog,
 } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 
-const navLinks = [
+type NavLink = { href: string; label: string; icon: typeof LayoutDashboard; staff?: boolean };
+
+const navLinks: NavLink[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingCart, staff: true },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/consulting", label: "Consulting", icon: Briefcase },
   { href: "/admin/gallery", label: "Gallery", icon: Images },
   { href: "/admin/content", label: "Site Content", icon: FileText },
-  { href: "/admin/messages", label: "Messages", icon: Inbox },
+  { href: "/admin/messages", label: "Messages", icon: Inbox, staff: true },
   { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/team", label: "Team", icon: Users },
+  { href: "/admin/account", label: "Account", icon: UserCog, staff: true },
 ];
 
 export default async function AdminLayout({
@@ -33,7 +39,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireAdmin();
+  const { role } = await requireStaff();
+  const links = navLinks.filter((l) => role === "admin" || l.staff);
 
   return (
     <div className="min-h-screen bg-kb-charcoal/[0.02]">
@@ -44,7 +51,7 @@ export default async function AdminLayout({
             <span className="font-display text-lg font-bold text-white">Admin</span>
           </Link>
           <nav className="flex items-center gap-1 overflow-x-auto">
-            {navLinks.map((l) => (
+            {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}

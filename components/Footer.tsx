@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Mail, Globe } from "lucide-react";
+import { MapPin, Mail, Globe, MessageCircle } from "lucide-react";
+import { whatsappLink } from "@/lib/whatsapp";
 import { FieldLines } from "@/components/FieldArt";
 
 const verticals = [
@@ -21,7 +22,7 @@ const company = [
 
 const linkCls = "text-white/70 transition-colors hover:text-kb-gold";
 
-export default function Footer() {
+export default function Footer({ whatsapp }: { whatsapp?: string | null }) {
   return (
     <footer className="relative overflow-hidden bg-kb-forest text-white">
       <div className="h-1 bg-kb-gold" aria-hidden="true" />
@@ -80,6 +81,14 @@ export default function Footer() {
                 kingboost.africa@gmail.com
               </a>
             </li>
+            {whatsapp && (
+              <li className="flex gap-3">
+                <MessageCircle size={18} className="mt-0.5 shrink-0 text-kb-gold" aria-hidden="true" />
+                <a href={whatsappLink(whatsapp)} target="_blank" rel="noopener noreferrer" className={linkCls}>
+                  Chat on WhatsApp
+                </a>
+              </li>
+            )}
             <li className="flex gap-3">
               <Globe size={18} className="mt-0.5 shrink-0 text-kb-gold" aria-hidden="true" />
               <a href="https://kingboostfarms.com.ng" className={linkCls}>

@@ -43,3 +43,18 @@ export async function getCheckoutOptions(): Promise<CheckoutOptions> {
     return empty;
   }
 }
+
+// The WhatsApp number shown across the site (set in Admin > Settings). null = none set / unreadable.
+export async function getWhatsappNumber(): Promise<string | null> {
+  try {
+    const { data } = await createPublicClient()
+      .from("store_settings")
+      .select("whatsapp_number")
+      .eq("id", 1)
+      .maybeSingle();
+    const n = String(data?.whatsapp_number ?? "").replace(/\D/g, "");
+    return /^\d{10,15}$/.test(n) ? n : null;
+  } catch {
+    return null;
+  }
+}

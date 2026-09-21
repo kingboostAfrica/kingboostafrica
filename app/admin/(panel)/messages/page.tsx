@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import type { Enrollment, ConsultingBooking, Inquiry } from "@/lib/types";
 import { GraduationCap, Briefcase, Mail } from "lucide-react";
 import StatusSelect from "@/components/admin/StatusSelect";
@@ -8,7 +8,7 @@ const REQUEST_STATUSES = ["pending", "confirmed", "cancelled"];
 const INQUIRY_STATUSES = ["new", "contacted", "closed"];
 
 export default async function AdminMessagesPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireStaff();
 
   const [{ data: enrollments }, { data: bookings }, { data: inquiries }] = await Promise.all([
     supabase

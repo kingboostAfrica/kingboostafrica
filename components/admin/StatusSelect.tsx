@@ -18,7 +18,7 @@ export default function StatusSelect({
   value: string;
   options: string[];
   // Ask before setting this status, e.g. { value: "cancelled", message: "..." }
-  confirmOn?: { value: string; message: string };
+  confirmOn?: { value: string; message: string } | { value: string; message: string }[];
   // When set, the change goes through this server endpoint (which can also send emails)
   endpoint?: string;
 }) {
@@ -31,7 +31,9 @@ export default function StatusSelect({
 
   function handleChange(next: string) {
     if (next === status) return;
-    if (confirmOn && next === confirmOn.value && !window.confirm(confirmOn.message)) return;
+    const rules = confirmOn ? (Array.isArray(confirmOn) ? confirmOn : [confirmOn]) : [];
+    const rule = rules.find((r) => r.value === next);
+    if (rule && !window.confirm(rule.message)) return;
     setError("");
     setNote("");
     startTransition(async () => {

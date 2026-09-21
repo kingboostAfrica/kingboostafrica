@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/admin";
+import { requireStaff } from "@/lib/admin";
 import type { Order, OrderItem } from "@/lib/types";
 import StatusSelect from "@/components/admin/StatusSelect";
 import { MapPin, Phone, MessageCircle } from "lucide-react";
@@ -25,7 +25,7 @@ function whatsappLink(phone: string) {
 }
 
 export default async function AdminOrdersPage() {
-  const { supabase } = await requireAdmin();
+  const { supabase, role } = await requireStaff();
 
   const { data: ordersData } = await supabase
     .from("orders")
@@ -53,12 +53,14 @@ export default async function AdminOrdersPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
-      <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
-        ← Dashboard
-      </Link>
+      {role === "admin" && (
+        <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
+          ← Dashboard
+        </Link>
+      )}
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2">Orders</h1>
       <p className="text-kb-charcoal/60 mt-1 mb-8">
-        {orders.length} order(s) · {pending} pending. Payment is collected on delivery for now.
+        {orders.length} order(s) · {pending} pending. Orders paid online show as Paid.
         Cancelling an order puts its stock back automatically.
       </p>
 
@@ -123,11 +125,20 @@ export default async function AdminOrdersPage() {
                         id={o.id}
                         value={o.status}
                         options={o.status === "cancelled" ? ["cancelled"] : STATUSES}
-                        confirmOn={{
-                          value: "cancelled",
-                          message:
-                            "Cancel this order? The items go back into stock and the order cannot be re-opened.",
-                        }}
+                        confirmOn={[
+                          {
+                            value: "cancelled",
+                            message:
+                              "Cancel this order? The items go back into stock and the order cannot be re-opened.",
+                          },
+                          {
+                            value: "shipped",
+                            message:
+                              o.fulfilment_method === "pickup"
+                                ? "Mark as ready for pickup? The customer is emailed and can no longer cancel it themselves."
+                                : "Mark as shipped? The customer is emailed that it is on its way and can no longer cancel it themselves.",
+                          },
+                        ]}
                       />
                     </div>
                   </div>
@@ -142,7 +153,11 @@ export default async function AdminOrdersPage() {
                       Requested {new Date(o.cancel_requested_at).toLocaleString()}. Approve to refund the full payment
                       through Paystack, or decline if you have already prepared it.
                     </p>
-                    <CancelRequestActions orderId={o.id} kind="request" />
+                    {role === "admin" ? (
+                      <CancelRequestActions orderId={o.id} kind="request" />
+                    ) : (
+                      <p className="text-xs font-semibold text-kb-gold-dark">An admin needs to approve or decline this request.</p>
+                    )}
                   </div>
                 )}
                 {o.status === "cancelled" && o.refund_status && (
@@ -156,7 +171,7 @@ export default async function AdminOrdersPage() {
                           : "FAILED"}
                     </p>
                     {o.refund_note && <p className="mt-1 text-xs text-kb-charcoal/60">{o.refund_note}</p>}
-                    {o.refund_status === "failed" && (
+                    {o.refund_status === "failed" && role === "admin" && (
                       <div className="mt-3">
                         <CancelRequestActions orderId={o.id} kind="retry" />
                       </div>

@@ -8,7 +8,7 @@ export default async function AdminSettingsPage() {
   const [{ data: settings }, { data: zones }] = await Promise.all([
     supabase
       .from("store_settings")
-      .select("vat_percent, pickup_enabled, pickup_address, pickup_instructions")
+      .select("vat_percent, pickup_enabled, pickup_address, pickup_instructions, whatsapp_number")
       .eq("id", 1)
       .maybeSingle(),
     supabase.from("delivery_zones").select("id, name, fee, is_active").order("name"),
@@ -19,7 +19,7 @@ export default async function AdminSettingsPage() {
       <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
         ← Dashboard
       </Link>
-      <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-2">Checkout settings</h1>
+      <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-2">Store settings</h1>
       <p className="text-kb-charcoal/60 mb-8">
         VAT, self pickup and delivery fees are added to every new order at checkout, and are included in what
         Paystack charges. Orders already placed keep the amounts they were charged.
@@ -31,6 +31,7 @@ export default async function AdminSettingsPage() {
           pickupEnabled={Boolean(settings?.pickup_enabled)}
           pickupAddress={settings?.pickup_address ?? ""}
           pickupInstructions={settings?.pickup_instructions ?? ""}
+          whatsappNumber={settings?.whatsapp_number ?? ""}
         />
         <DeliveryZonesManager
           zones={((zones as { id: string; name: string; fee: number; is_active: boolean }[] | null) ?? []).map(

@@ -1,26 +1,33 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-// Use this at the top of every /admin/* server page instead of just
-// checking `if (!user) redirect("/admin/login")`.
-// It confirms the logged-in user is actually listed in the `admins` table,
-// not just any logged-in Supabase user (e.g. a farmer account).
-export async function requireAdmin() {
-  const supabase = await createClient();
+export type AdminRole = "admin" | "staff";
 
+async function loadAdmin() {
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return { supabase, user: null, role: null as AdminRole | null };
 
-  if (!user) redirect("/admin/login");
+  // select("*") so this also works before the `role` column exists (everyone is then a full admin)
+  const { data: row } = await supabase.from("admins").select("*").eq("id", user.id).single();
+  if (!row) return { supabase, user, role: null as AdminRole | null };
+  return { supabase, user, role: (row.role === "staff" ? "staff" : "admin") as AdminRole };
+}
 
-  const { data: adminRow } = await supabase
-    .from("admins")
-    .select("id")
-    .eq("id", user.id)
-    .single();
+// Use at the top of every admin page/API that only a FULL admin may see
+// (products, settings, refunds, site content, team...). Staff are sent to Orders.
+export async function requireAdmin() {
+  const { supabase, user, role } = await loadAdmin();
+  if (!user || !role) redirect("/admin/login");
+  if (role !== "admin") redirect("/admin/orders");
+  return { supabase, user, role };
+}
 
-  if (!adminRow) redirect("/admin/login");
-
-  return { supabase, user };
+// Use where staff are allowed too (Orders, Messages, Account).
+export async function requireStaff() {
+  const { supabase, user, role } = await loadAdmin();
+  if (!user || !role) redirect("/admin/login");
+  return { supabase, user, role };
 }
