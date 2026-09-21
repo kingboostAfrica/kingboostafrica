@@ -9,6 +9,8 @@ import {
   GraduationCap,
   Briefcase,
   Cpu,
+  ShoppingBasket,
+  Truck,
 } from "lucide-react";
 import { getPageContent, pick } from "@/lib/content";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -65,7 +67,9 @@ export default async function Home() {
           className="pointer-events-none absolute -left-32 -top-40 h-[34rem] w-[34rem] rounded-full bg-kb-forest-2 opacity-70 blur-3xl"
           aria-hidden="true"
         />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-28">
+        <FieldLines className="pointer-events-none absolute inset-y-0 right-0 h-full w-full opacity-70 lg:w-3/5" />
+
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-12 sm:py-16 lg:grid-cols-2 lg:gap-14 lg:py-20">
           <div>
             <h1 className="text-4xl font-bold leading-[1.08] sm:text-5xl lg:text-[3.5rem]">
               {hero?.title ?? "Cultivating growth, nourishing nations."}
@@ -75,7 +79,7 @@ export default async function Home() {
               {hero?.body ??
                 "KingBoostFarms is a Nigerian agribusiness spanning food retail, education, consulting, technology, and organics — built to strengthen agriculture from farm to table."}
             </p>
-            <div className="mt-9 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-wrap gap-4">
               <Link href="/food-mart" className="btn btn-gold">
                 Shop Food Mart <ArrowRight size={18} aria-hidden="true" />
               </Link>
@@ -83,31 +87,74 @@ export default async function Home() {
                 About KingBoostFarms
               </Link>
             </div>
-          </div>
 
-          {/* Hero visual: uploaded photo if one is set in Site Content, else the field artwork */}
-          <div className="relative mx-auto hidden aspect-[4/5] w-full max-w-md overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/15 lg:block">
-            {hero?.image_url ? (
-              <>
-                <Image
-                  src={hero.image_url}
-                  alt=""
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 28rem, 0px"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-kb-forest/60 via-transparent to-transparent" />
-              </>
-            ) : (
-              <FieldArt className="absolute inset-0 h-full w-full" />
-            )}
-            <div className="absolute inset-x-5 bottom-5 rounded-lg bg-kb-forest/85 px-4 py-3 backdrop-blur">
-              <p className="font-display text-base italic text-white">
-                Cultivating Growth, Nourishing Nations
-              </p>
+            <div className="mt-10">
+              <p className="mb-3 text-sm font-semibold text-white/60">Explore what we do</p>
+              <ul className="flex flex-wrap gap-2">
+                {verticalDefaults.map((v) => (
+                  <li key={v.slug}>
+                    <Link
+                      href={`/${v.slug}`}
+                      className="inline-flex items-center rounded-full border border-white/25 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:border-kb-gold hover:bg-kb-gold hover:text-kb-forest"
+                    >
+                      {v.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
+
+          {/* Hero visual: the photo set in Site Content, or the field artwork until one is uploaded */}
+          <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:max-w-lg">
+            <div
+              className="absolute -bottom-4 -right-4 hidden h-full w-full rounded-2xl border-2 border-kb-gold/60 sm:block"
+              aria-hidden="true"
+            />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/15">
+              {hero?.image_url ? (
+                <Image
+                  src={hero.image_url}
+                  alt="KingBoostFarms"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 32rem, 90vw"
+                  className="object-cover"
+                />
+              ) : (
+                <>
+                  <FieldArt className="absolute inset-0 h-full w-full" />
+                  <div className="absolute inset-x-5 bottom-5 rounded-lg bg-kb-forest/85 px-4 py-3 backdrop-blur">
+                    <p className="font-display text-base italic text-white">
+                      Cultivating Growth, Nourishing Nations
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits strip */}
+        <div className="relative border-t border-white/10 bg-kb-forest-2/70">
+          <ul className="mx-auto grid max-w-6xl gap-x-8 gap-y-6 px-5 py-8 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: ShoppingBasket, title: "Fresh, natural produce", text: "Pure, nutritious food you can order online." },
+              { icon: ShieldCheck, title: "Secure payment", text: "Pay online with Paystack, or on delivery." },
+              { icon: Truck, title: "Delivery or pickup", text: "We deliver to your area, or you collect it where offered." },
+              { icon: GraduationCap, title: "Learn and grow", text: "Courses and expert advice for farms and agribusinesses." },
+            ].map((b) => (
+              <li key={b.title} className="flex gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-kb-gold/15 text-kb-gold">
+                  <b.icon size={22} aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-white">{b.title}</span>
+                  <span className="mt-0.5 block text-sm leading-snug text-white/65">{b.text}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="h-1 bg-kb-gold" aria-hidden="true" />
       </section>
