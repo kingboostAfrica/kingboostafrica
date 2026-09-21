@@ -2,7 +2,13 @@
 // Uses the server (service) key: customers have no accounts, the link's token is the proof.
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidateCatalog } from "@/lib/revalidate-server";
-import { alertOwnerCustomerCancelled, extrasFromOrder, sendOrderCancelledEmail } from "@/lib/order-emails";
+import {
+  alertOwnerCancelRequest,
+  alertOwnerCustomerCancelled,
+  extrasFromOrder,
+  sendCancelRequestReceivedEmail,
+  sendOrderCancelledEmail,
+} from "@/lib/order-emails";
 import type { OrderExtras, OrderLine } from "@/lib/email";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -22,6 +28,10 @@ export type CancelView =
       extras?: OrderExtras;
       // pending = we have not started on it yet, so the customer may cancel
       canCancel: boolean;
+      // paid online and not shipped yet: the customer may ASK to cancel (the owner approves and refunds)
+      canRequest: boolean;
+      requested: boolean;
+      refundStatus: string | null;
     };
 
 export async function lookupOrderByToken(token: string): Promise<CancelView> {
@@ -52,10 +62,19 @@ export async function lookupOrderByToken(token: string): Promise<CancelView> {
     })),
     extras: extrasFromOrder(order),
     canCancel: order.status === "pending",
+    canRequest: order.status === "paid" && order.payment_method === "online" && !order.cancel_requested_at,
+    requested: Boolean(order.cancel_requested_at),
+    refundStatus: order.refund_status ?? null,
   };
 }
 
-export type CancelResult = "cancelled" | "already_cancelled" | "not_allowed" | "not_found";
+export type CancelResult =
+  | "cancelled"
+  | "already_cancelled"
+  | "requested"
+  | "already_requested"
+  | "not_allowed"
+  | "not_found";
 
 export async function cancelOrderByToken(token: string): Promise<CancelResult> {
   const admin = createAdminClient();
@@ -81,7 +100,34 @@ export async function cancelOrderByToken(token: string): Promise<CancelResult> {
     return "cancelled";
   }
 
-  const { data: order } = await admin.from("orders").select("status").eq("cancel_token", token).maybeSingle();
+  const { data: order } = await admin
+    .from("orders")
+    .select("status, payment_method, cancel_requested_at")
+    .eq("cancel_token", token)
+    .maybeSingle();
   if (!order) return "not_found";
-  return order.status === "cancelled" ? "already_cancelled" : "not_allowed";
+  if (order.status === "cancelled") return "already_cancelled";
+
+  // Already paid online and not shipped: record a REQUEST. The owner approves (and refunds) or declines.
+  if (order.status === "paid" && order.payment_method === "online") {
+    if (order.cancel_requested_at) return "already_requested";
+    const { data: flagged } = await admin
+      .from("orders")
+      .update({ cancel_requested_at: new Date().toISOString() })
+      .eq("cancel_token", token)
+      .eq("status", "paid")
+      .is("cancel_requested_at", null)
+      .select("id");
+    if (flagged && flagged.length > 0) {
+      try {
+        await alertOwnerCancelRequest(admin, flagged[0].id as string);
+        await sendCancelRequestReceivedEmail(admin, flagged[0].id as string);
+      } catch (err) {
+        console.error("Cancel-request email error:", err);
+      }
+      return "requested";
+    }
+    return "already_requested";
+  }
+  return "not_allowed";
 }

@@ -4,6 +4,7 @@ import type { Order, OrderItem } from "@/lib/types";
 import StatusSelect from "@/components/admin/StatusSelect";
 import { MapPin, Phone, MessageCircle } from "lucide-react";
 import { formatNaira } from "@/lib/pricing";
+import CancelRequestActions from "@/components/admin/CancelRequestActions";
 
 const STATUSES = ["pending", "paid", "shipped", "completed", "cancelled"];
 
@@ -131,6 +132,37 @@ export default async function AdminOrdersPage() {
                     </div>
                   </div>
                 </div>
+
+                {o.status === "paid" && o.cancel_requested_at && (
+                  <div className="mt-4 rounded-lg border border-kb-gold/50 bg-kb-gold/10 p-4">
+                    <p className="text-sm font-semibold text-kb-forest">
+                      The customer asked to cancel this paid order
+                    </p>
+                    <p className="mb-3 mt-1 text-xs text-kb-charcoal/60">
+                      Requested {new Date(o.cancel_requested_at).toLocaleString()}. Approve to refund the full payment
+                      through Paystack, or decline if you have already prepared it.
+                    </p>
+                    <CancelRequestActions orderId={o.id} kind="request" />
+                  </div>
+                )}
+                {o.status === "cancelled" && o.refund_status && (
+                  <div className="mt-4 rounded-lg border border-kb-forest/15 bg-kb-mist p-4">
+                    <p className="text-sm font-semibold text-kb-forest">
+                      Refund:{" "}
+                      {o.refund_status === "processed"
+                        ? "processed"
+                        : o.refund_status === "queued"
+                          ? "requested from Paystack (in progress)"
+                          : "FAILED"}
+                    </p>
+                    {o.refund_note && <p className="mt-1 text-xs text-kb-charcoal/60">{o.refund_note}</p>}
+                    {o.refund_status === "failed" && (
+                      <div className="mt-3">
+                        <CancelRequestActions orderId={o.id} kind="retry" />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <ul className="mt-4 text-sm text-kb-charcoal/70 space-y-1">
                   {lines.map((l) => {

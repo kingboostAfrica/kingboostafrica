@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { confirmPayment, verifyWebhookSignature } from "@/lib/paystack";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Paystack calls this after every payment. Set the URL in the Paystack dashboard:
 //   Settings > API Keys & Webhooks > Live/Test Webhook URL
@@ -12,9 +13,24 @@ export async function POST(request: Request) {
   }
 
   try {
-    const event = JSON.parse(raw) as { event?: string; data?: { reference?: string } };
+    const event = JSON.parse(raw) as {
+      event?: string;
+      data?: { reference?: string; transaction_reference?: string; transaction?: { reference?: string } };
+    };
     if (event.event === "charge.success" && event.data?.reference) {
       await confirmPayment(event.data.reference);
+    }
+
+    // Keep the refund status shown in the admin in step with Paystack (best effort).
+    if (event.event === "refund.processed" || event.event === "refund.failed") {
+      const ref = event.data?.transaction_reference ?? event.data?.transaction?.reference;
+      const admin = createAdminClient();
+      if (ref && admin) {
+        await admin
+          .from("orders")
+          .update({ refund_status: event.event === "refund.processed" ? "processed" : "failed" })
+          .eq("payment_reference", ref);
+      }
     }
   } catch (err) {
     // Return an error so Paystack retries later.

@@ -49,6 +49,9 @@ export interface Order {
   vat_amount?: number;
   delivery_fee?: number;
   cancelled_by?: string | null;
+  cancel_requested_at?: string | null;
+  refund_status?: "queued" | "processed" | "failed" | null;
+  refund_note?: string | null;
   fulfilment_method?: "delivery" | "pickup";
   delivery_zone?: string | null;
   created_at: string;

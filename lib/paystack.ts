@@ -61,6 +61,25 @@ export async function initializeTransaction(input: {
   return json.data.authorization_url as string;
 }
 
+/** Ask Paystack to refund a payment in full. Resolves with Paystack's own message. */
+export async function createRefund(
+  reference: string,
+  customerNote: string
+): Promise<{ ok: boolean; message: string }> {
+  try {
+    const res = await fetch(`${API()}/refund`, {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ transaction: reference, customer_note: customerNote }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const json = await res.json().catch(() => null);
+    return { ok: Boolean(res.ok && json?.status), message: String(json?.message ?? `Paystack error ${res.status}`) };
+  } catch (err) {
+    return { ok: false, message: err instanceof Error ? err.message : "Could not reach Paystack." };
+  }
+}
+
 type VerifyData = { status: string; reference: string; amount: number; currency: string };
 
 async function verifyTransaction(reference: string): Promise<VerifyData | null> {

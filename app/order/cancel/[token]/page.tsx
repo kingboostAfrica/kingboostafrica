@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import CancelOrderButton from "@/components/CancelOrderButton";
 import { lookupOrderByToken } from "@/lib/order-cancel";
@@ -72,7 +72,11 @@ export default async function CancelOrderPage({ params }: { params: Promise<{ to
               <p className="mb-6 text-kb-charcoal/70">
                 This order has been cancelled.{" "}
                 {online
-                  ? "If you already paid, please contact us and we will arrange your refund."
+                  ? view.refundStatus === "processed"
+                    ? "Your refund has been processed."
+                    : view.refundStatus === "queued"
+                      ? "Your refund has been started. It can take several business days to show in your account."
+                      : "If you already paid, we will be in touch about your refund."
                   : "You have not been charged."}
               </p>
               <Link href="/food-mart" className="btn btn-primary">Visit the Food Mart</Link>
@@ -84,13 +88,29 @@ export default async function CancelOrderPage({ params }: { params: Promise<{ to
               </p>
               <CancelOrderButton token={token} />
             </>
+          ) : view.requested && view.status === "paid" ? (
+            <>
+              <Clock className="mx-auto mb-3 text-kb-gold-dark" size={40} aria-hidden="true" />
+              <p className="mb-2 font-semibold text-kb-forest">Cancellation requested</p>
+              <p className="mb-6 text-kb-charcoal/70">
+                We have your request and will review it. We will email you as soon as we have an answer.
+              </p>
+              <Link href="/contact" className="btn btn-primary">Contact us</Link>
+            </>
+          ) : view.canRequest ? (
+            <>
+              <p className="mb-5 text-kb-charcoal/70">
+                You have paid for this order. You can ask us to cancel it and refund your payment, as long
+                as we have not shipped it yet. We will review your request and email you.
+              </p>
+              <CancelOrderButton token={token} mode="request" />
+            </>
           ) : (
             <>
               <AlertTriangle className="mx-auto mb-3 text-kb-gold-dark" size={40} aria-hidden="true" />
               <p className="mb-6 text-kb-charcoal/70">
-                {online && view.status === "paid"
-                  ? "You paid for this order online, so we handle cancellations and refunds personally. Please contact us."
-                  : "We have already started on this order, so it can no longer be cancelled here. Please contact us if you need help."}
+                We have already started on this order, so it can no longer be cancelled here. Please contact us
+                if you need help.
               </p>
               <Link href="/contact" className="btn btn-primary">Contact us</Link>
             </>
