@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { requireAdmin } from "@/lib/admin";
 import type { Category, GalleryItem } from "@/lib/types";
@@ -19,9 +18,6 @@ export default async function AdminGalleryPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
-      <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
-        ← Dashboard
-      </Link>
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-8">Gallery</h1>
 
       <GalleryUploader categories={cats} />

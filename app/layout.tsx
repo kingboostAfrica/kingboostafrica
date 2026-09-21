@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HideOnAdmin from "@/components/HideOnAdmin";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import { getWhatsappNumber } from "@/lib/store-settings";
+import { getSocialLinks, getWhatsappNumber } from "@/lib/store-settings";
 import { CartProvider } from "@/lib/cart-context";
 import { SITE_URL } from "@/lib/site";
 
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const whatsapp = await getWhatsappNumber();
+  const [whatsapp, social] = await Promise.all([getWhatsappNumber(), getSocialLinks()]);
   return (
     <html
       lang="en"
@@ -44,10 +44,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-white text-kb-charcoal">
         <CartProvider>
-          <Navbar />
+          <Navbar social={social} whatsapp={whatsapp} />
           <main className="flex-1">{children}</main>
           <HideOnAdmin>
-            <Footer whatsapp={whatsapp} />
+            <Footer whatsapp={whatsapp} social={social} />
             {whatsapp && <WhatsAppButton number={whatsapp} />}
           </HideOnAdmin>
         </CartProvider>

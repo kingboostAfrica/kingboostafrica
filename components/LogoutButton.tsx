@@ -19,7 +19,7 @@ export default function LogoutButton() {
       onClick={handleLogout}
       className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
     >
-      <LogOut size={16} /> Log out
+      <LogOut size={16} aria-hidden="true" /> <span className="hidden sm:inline">Log out</span><span className="sr-only sm:hidden">Log out</span>
     </button>
   );
 }

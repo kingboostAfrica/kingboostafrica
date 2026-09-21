@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import StoreSettingsForm from "@/components/admin/StoreSettingsForm";
 import DeliveryZonesManager, { type ZoneRow } from "@/components/admin/DeliveryZonesManager";
@@ -16,9 +15,6 @@ export default async function AdminSettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-12">
-      <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
-        ← Dashboard
-      </Link>
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-2">Store settings</h1>
       <p className="text-kb-charcoal/60 mb-8">
         VAT, self pickup and delivery fees are added to every new order at checkout, and are included in what

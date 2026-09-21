@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import PageHeader from "@/components/PageHeader";
@@ -273,6 +274,17 @@ export default function CheckoutClient({
             {paymentMethod === "online"
               ? "You will be redirected to Paystack to complete your payment."
               : fulfilment === "pickup" ? "Payment is collected when you pick up your order." : "Payment is collected on delivery."}
+          </p>
+          <p className="text-xs text-kb-charcoal/50 text-center">
+            By placing your order you agree to our{" "}
+            <Link href="/delivery-and-refunds" target="_blank" className="font-semibold text-kb-green hover:underline">
+              Delivery &amp; Refund Policy
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy-policy" target="_blank" className="font-semibold text-kb-green hover:underline">
+              Privacy Policy
+            </Link>
+            .
           </p>
         </form>
         </div>

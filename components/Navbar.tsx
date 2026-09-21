@@ -18,6 +18,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import SocialIcons from "@/components/SocialIcons";
+import type { SocialLink } from "@/lib/social";
 
 const verticals = [
   { href: "/food-mart", label: "Food Mart", desc: "Fresh, natural produce", icon: ShoppingCart },
@@ -32,7 +34,7 @@ const secondary = [
   { href: "/about", label: "About" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[]; whatsapp?: string | null }) {
   const [open, setOpen] = useState(false);
   const { count } = useCart();
   const pathname = usePathname();
@@ -60,9 +62,16 @@ export default function Navbar() {
               kingboost.africa@gmail.com
             </a>
           </div>
-          <p className="hidden font-display italic text-white/70 md:block">
-            Cultivating Growth, Nourishing Nations
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="hidden font-display italic text-white/70 lg:block">
+              Cultivating Growth, Nourishing Nations
+            </p>
+            {(social.length > 0 || whatsapp) && (
+              <div className="hidden md:block">
+                <SocialIcons links={social} whatsapp={whatsapp} tone="light" size={14} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

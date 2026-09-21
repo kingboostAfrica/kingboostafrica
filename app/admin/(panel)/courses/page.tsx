@@ -19,9 +19,6 @@ export default async function AdminCoursesPage() {
     <div className="max-w-4xl mx-auto px-5 py-12">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
-            ← Dashboard
-          </Link>
           <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2">
             Academy Courses
           </h1>

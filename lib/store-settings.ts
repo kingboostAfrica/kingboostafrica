@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
+import { SOCIAL_PLATFORMS, isValidSocialUrl, type SocialLink } from "@/lib/social";
 
 export type DeliveryZone = { id: string; name: string; fee: number };
 
@@ -56,5 +57,17 @@ export async function getWhatsappNumber(): Promise<string | null> {
     return /^\d{10,15}$/.test(n) ? n : null;
   } catch {
     return null;
+  }
+}
+
+// Social media links switched on in Admin > Social media, in a fixed, tidy order.
+export async function getSocialLinks(): Promise<SocialLink[]> {
+  try {
+    const { data } = await createPublicClient().from("social_links").select("platform, url").eq("is_active", true);
+    const rows = (data as SocialLink[] | null) ?? [];
+    return SOCIAL_PLATFORMS.map((p) => rows.find((r) => r.platform === p.key))
+      .filter((r): r is SocialLink => Boolean(r) && isValidSocialUrl(r!.url));
+  } catch {
+    return [];
   }
 }

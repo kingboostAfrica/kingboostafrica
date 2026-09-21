@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Mail, Globe, MessageCircle } from "lucide-react";
 import { whatsappLink } from "@/lib/whatsapp";
+import SocialIcons from "@/components/SocialIcons";
+import type { SocialLink } from "@/lib/social";
 import { FieldLines } from "@/components/FieldArt";
 
 const verticals = [
@@ -16,13 +18,14 @@ const company = [
   { href: "/about", label: "About us" },
   { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact us" },
+  { href: "/delivery-and-refunds", label: "Delivery & refunds" },
   { href: "/privacy-policy", label: "Privacy policy" },
   { href: "/disclaimer", label: "Disclaimer" },
 ];
 
 const linkCls = "text-white/70 transition-colors hover:text-kb-gold";
 
-export default function Footer({ whatsapp }: { whatsapp?: string | null }) {
+export default function Footer({ whatsapp, social = [] }: { whatsapp?: string | null; social?: SocialLink[] }) {
   return (
     <footer className="relative overflow-hidden bg-kb-forest text-white">
       <div className="h-1 bg-kb-gold" aria-hidden="true" />
@@ -40,6 +43,12 @@ export default function Footer({ whatsapp }: { whatsapp?: string | null }) {
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
             Pure, natural, nutritious produce and agribusiness services across Nigeria.
           </p>
+          {(social.length > 0 || whatsapp) && (
+            <div className="mt-5">
+              <p className="mb-2 text-sm font-semibold text-white">Follow us</p>
+              <SocialIcons links={social} whatsapp={whatsapp} tone="light" />
+            </div>
+          )}
         </div>
 
         <div>

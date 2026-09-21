@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireStaff } from "@/lib/admin";
 import type { Order, OrderItem } from "@/lib/types";
 import StatusSelect from "@/components/admin/StatusSelect";
@@ -53,11 +52,6 @@ export default async function AdminOrdersPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
-      {role === "admin" && (
-        <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
-          ← Dashboard
-        </Link>
-      )}
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2">Orders</h1>
       <p className="text-kb-charcoal/60 mt-1 mb-8">
         {orders.length} order(s) · {pending} pending. Orders paid online show as Paid.

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import TeamManager, { type Member } from "@/components/admin/TeamManager";
@@ -26,9 +25,6 @@ export default async function AdminTeamPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-12">
-      <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
-        ← Dashboard
-      </Link>
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-2">Team</h1>
       <p className="text-kb-charcoal/60 mb-8">
         Who can log in to the admin. <strong>Staff</strong> can only handle Orders and Messages (for example someone

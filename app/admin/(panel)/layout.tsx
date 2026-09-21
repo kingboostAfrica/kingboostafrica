@@ -1,37 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { requireStaff } from "@/lib/admin";
-import {
-  LayoutDashboard,
-  Package,
-  BookOpen,
-  Briefcase,
-  Images,
-  FileText,
-  Inbox,
-  ShoppingCart,
-  Tags,
-  Settings,
-  Users,
-  UserCog,
-} from "lucide-react";
+import { LayoutDashboard, Inbox, ShoppingCart, UserCog } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
+import AdminBackBar from "@/components/admin/AdminBackBar";
 
-type NavLink = { href: string; label: string; icon: typeof LayoutDashboard; staff?: boolean };
-
-const navLinks: NavLink[] = [
+// The header only keeps the few things you use all day. Every tool lives on the dashboard.
+const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart, staff: true },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/categories", label: "Categories", icon: Tags },
-  { href: "/admin/courses", label: "Courses", icon: BookOpen },
-  { href: "/admin/consulting", label: "Consulting", icon: Briefcase },
-  { href: "/admin/gallery", label: "Gallery", icon: Images },
-  { href: "/admin/content", label: "Site Content", icon: FileText },
-  { href: "/admin/messages", label: "Messages", icon: Inbox, staff: true },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-  { href: "/admin/team", label: "Team", icon: Users },
-  { href: "/admin/account", label: "Account", icon: UserCog, staff: true },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/messages", label: "Messages", icon: Inbox },
+];
+const staffLinks = [
+  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/messages", label: "Messages", icon: Inbox },
+  { href: "/admin/account", label: "Account", icon: UserCog },
 ];
 
 export default async function AdminLayout({
@@ -40,25 +23,27 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const { role } = await requireStaff();
-  const links = navLinks.filter((l) => role === "admin" || l.staff);
+  const links = role === "admin" ? adminLinks : staffLinks;
 
   return (
     <div className="min-h-screen bg-kb-charcoal/[0.02]">
       <header className="sticky top-0 z-40 bg-kb-forest border-b-2 border-kb-gold">
-        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between gap-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 h-16 flex items-center justify-between gap-2 sm:gap-6">
           <Link href="/admin" className="flex shrink-0 items-center gap-3">
             <Image src="/kingboost-icon-light.png" alt="" width={32} height={44} className="h-10 w-auto" />
-            <span className="font-display text-lg font-bold text-white">Admin</span>
+            <span className="hidden font-display text-lg font-bold text-white sm:inline">Admin</span>
           </Link>
-          <nav className="flex items-center gap-1 overflow-x-auto">
+          <nav className="flex items-center gap-1">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="flex items-center gap-1.5 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg whitespace-nowrap transition-colors"
+                aria-label={l.label}
+                title={l.label}
+                className="flex items-center gap-1.5 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 px-2.5 sm:px-3 py-2 rounded-lg whitespace-nowrap transition-colors"
               >
-                <l.icon size={16} />
-                {l.label}
+                <l.icon size={18} />
+                <span className="hidden sm:inline">{l.label}</span>
               </Link>
             ))}
           </nav>
@@ -70,6 +55,7 @@ export default async function AdminLayout({
           </div>
         </div>
       </header>
+      <AdminBackBar isAdmin={role === "admin"} />
       <main>{children}</main>
     </div>
   );

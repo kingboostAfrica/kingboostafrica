@@ -1,90 +1,163 @@
-import PageHeader from "@/components/PageHeader";
+import Link from "next/link";
+import PolicyLayout, { Note, P, UL, type PolicySection } from "@/components/PolicyLayout";
 
-export const metadata = { title: "Disclaimer — KingBoostFarms" };
+export const metadata = {
+  title: "Disclaimer — KingBoostFarms",
+  description: "Important information about the products, courses, advice and content on the KingBoostFarms website.",
+};
+
+const sections: PolicySection[] = [
+  {
+    id: "general",
+    title: "General information",
+    body: (
+      <P>
+        The information on this website is provided in good faith by KingBoost Farms Ltd. for general purposes. We work
+        to keep it accurate and up to date, but we make no promise that it is always complete, current or free of errors.
+        Please use your own judgment, and contact us if something is unclear.
+      </P>
+    ),
+  },
+  {
+    id: "products",
+    title: "Products and pictures",
+    body: (
+      <UL>
+        <li>
+          Pictures are for illustration. Fresh and natural products vary in size, shape, colour and appearance from one
+          batch to the next.
+        </li>
+        <li>Weights, sizes and quantities are approximate unless we say otherwise.</li>
+        <li>
+          Availability, stock levels and prices can change without notice. If a price is shown in error, we may correct it
+          and give you the option to proceed or cancel before we confirm your order.
+        </li>
+        <li>
+          Please check the product page and your order before you pay, and contact us if you are unsure about anything.
+        </li>
+      </UL>
+    ),
+  },
+  {
+    id: "allergies",
+    title: "Allergies, dietary needs and health",
+    body: (
+      <>
+        <P>
+          If you have an allergy, a medical condition or a special dietary need, please contact us before you order so we
+          can tell you what we know about a product. Products may be handled or stored near other foods.
+        </P>
+        <P>
+          Nothing on this site is medical or nutritional advice. Talk to a qualified professional about your health.
+        </P>
+      </>
+    ),
+  },
+  {
+    id: "training",
+    title: "Academy and consulting",
+    body: (
+      <>
+        <P>
+          Our Academy courses and consulting services share knowledge and experience to help farms and agribusinesses do
+          better. Results depend on many things outside our control, such as weather, markets, inputs, management and
+          local conditions.
+        </P>
+        <P>
+          We therefore do not guarantee particular outcomes, such as yields, profits, growth, funding or certification.
+          Examples, figures and case descriptions are illustrations, not promises. What is included in a course or service,
+          and its price and dates, are confirmed with you directly before you commit.
+        </P>
+      </>
+    ),
+  },
+  {
+    id: "advice",
+    title: "Agritech and organics content",
+    body: (
+      <P>
+        Content about technology, farming methods and organic practices is general guidance only. It is not a substitute
+        for professional agronomic, legal, financial or regulatory advice. Organic status and certification are decided by
+        the relevant certifying bodies against their own standards, so please check those requirements before you rely on
+        any claim.
+      </P>
+    ),
+  },
+  {
+    id: "third",
+    title: "Third-party services and links",
+    body: (
+      <P>
+        We use trusted services for payments (Paystack), messaging (WhatsApp) and other functions, and the site links to
+        social media pages. We do not control these services or their websites, and we are not responsible for their
+        content, availability or practices. Your use of them is under their own terms.
+      </P>
+    ),
+  },
+  {
+    id: "availability",
+    title: "Website availability",
+    body: (
+      <P>
+        We try to keep the website available at all times, but it may occasionally be unavailable because of maintenance,
+        technical faults or things outside our control. We are not responsible for any loss caused by the site being
+        unavailable for a period.
+      </P>
+    ),
+  },
+  {
+    id: "ip",
+    title: "Ownership of content",
+    body: (
+      <P>
+        The KingBoostFarms name, logo, text, pictures and design belong to KingBoost Farms Ltd. or are used with
+        permission. Please do not copy, reproduce or use them for commercial purposes without our written permission.
+      </P>
+    ),
+  },
+  {
+    id: "liability",
+    title: "Limits of our responsibility",
+    body: (
+      <>
+        <P>
+          To the fullest extent the law allows, KingBoost Farms Ltd. is not liable for indirect or consequential loss, or
+          for loss of profit or opportunity, arising from your use of this website or reliance on its content.
+        </P>
+        <Note>
+          Nothing in this disclaimer excludes or limits any liability that cannot be excluded by law, or your rights as a
+          consumer under Nigerian law. Your rights on orders, delivery and refunds are set out in our{" "}
+          <Link href="/delivery-and-refunds" className="font-semibold text-kb-green hover:underline">
+            Delivery & Refund Policy
+          </Link>
+          , and how we handle your information is explained in our{" "}
+          <Link href="/privacy-policy" className="font-semibold text-kb-green hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </Note>
+      </>
+    ),
+  },
+  {
+    id: "law",
+    title: "Governing law and changes",
+    body: (
+      <P>
+        This disclaimer is governed by the laws of the Federal Republic of Nigeria. We may update it from time to time, and
+        the date at the side of this page shows the latest version.
+      </P>
+    ),
+  },
+];
 
 export default function DisclaimerPage() {
   return (
-    <>
-      <PageHeader title="Disclaimer" description="Last updated: August 2026" />
-      <div className="mx-auto max-w-6xl px-5 py-14">
-
-      <div className="max-w-3xl space-y-8 text-kb-charcoal/70 leading-relaxed">
-        <section>
-          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">General Information</h2>
-          <p>
-            The information provided by KingBoostFarms on this website is
-            for general informational purposes only. All information is
-            provided in good faith, however we make no representation or
-            warranty of any kind, express or implied, regarding the
-            accuracy, adequacy, validity, reliability, availability, or
-            completeness of any information on the site.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">Product & Availability Disclaimer</h2>
-          <p>
-            Product images, descriptions, and prices on Food Mart are for
-            illustrative purposes and may vary from the actual item
-            delivered. Availability of produce is subject to seasonal supply
-            and stock levels.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">Advisory & Training Disclaimer</h2>
-          <p>
-            Content and guidance provided through Academy courses and
-            Consulting services reflect general agricultural and business
-            practices. They do not constitute professional, financial, legal,
-            or agronomic advice specific to your circumstances, and should
-            not be relied upon as a substitute for tailored professional
-            consultation.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">Agritech & Organics Disclaimer</h2>
-          <p>
-            Outcomes from Agritech tools and Organics products can vary
-            based on location, soil, climate, and application. We make no
-            guarantee of specific yields or results.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">External Links Disclaimer</h2>
-          <p>
-            This site may contain links to third-party websites. We do not
-            warrant, endorse, or assume responsibility for the accuracy or
-            reliability of any information offered by third-party sites
-            linked through our platform.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">Limitation of Liability</h2>
-          <p>
-            Under no circumstance shall KingBoostFarms be liable for any loss
-            or damage of any kind incurred as a result of the use of this
-            site or reliance on any information provided. Your use of the
-            site and your reliance on any information is solely at your own
-            risk.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="font-display text-xl font-bold text-kb-forest mb-2">Contact Us</h2>
-          <p>
-            Questions about this Disclaimer can be sent to{" "}
-            <a href="mailto:kingboost.africa@gmail.com" className="text-kb-green hover:underline">
-              kingboost.africa@gmail.com
-            </a>
-            .
-          </p>
-        </section>
-      </div>
-      </div>
-    </>
+    <PolicyLayout
+      title="Disclaimer"
+      description="Important information about the products, courses, advice and content on this website."
+      updated="September 2026"
+      sections={sections}
+    />
   );
 }

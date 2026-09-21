@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireStaff } from "@/lib/admin";
 import type { Enrollment, ConsultingBooking, Inquiry } from "@/lib/types";
 import { GraduationCap, Briefcase, Mail } from "lucide-react";
@@ -28,9 +27,6 @@ export default async function AdminMessagesPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
-      <Link href="/admin" className="text-sm text-kb-gold-dark hover:underline">
-        ← Dashboard
-      </Link>
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-10">
         Messages
       </h1>
