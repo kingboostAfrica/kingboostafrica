@@ -1,8 +1,9 @@
-import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Mail, Globe, MessageCircle } from "lucide-react";
 import { whatsappLink } from "@/lib/whatsapp";
 import SocialIcons from "@/components/SocialIcons";
+import ScrollTopLink, { ScrollAfterNavigation } from "@/components/ScrollTopLink";
+import BackToTop from "@/components/BackToTop";
 import type { SocialLink } from "@/lib/social";
 import { FieldLines } from "@/components/FieldArt";
 
@@ -28,18 +29,21 @@ const linkCls = "text-white/70 transition-colors hover:text-kb-gold";
 export default function Footer({ whatsapp, social = [] }: { whatsapp?: string | null; social?: SocialLink[] }) {
   return (
     <footer className="relative overflow-hidden bg-kb-forest text-white">
+      <ScrollAfterNavigation />
       <div className="h-1 bg-kb-gold" aria-hidden="true" />
       <FieldLines className="pointer-events-none absolute inset-y-0 right-0 h-full w-full opacity-60 lg:w-2/3" />
 
       <div className="relative mx-auto grid max-w-6xl gap-12 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.4fr]">
         <div>
-          <Image
-            src="/kingboost-full-light.png"
-            alt="KingBoost Farms Ltd. — Cultivating Growth, Nourishing Nations"
-            width={775}
-            height={654}
-            className="h-auto w-44"
-          />
+          <ScrollTopLink href="/" ariaLabel="KingBoostFarms home" className="inline-block">
+            <Image
+              src="/kingboost-full-light.png"
+              alt="KingBoost Farms Ltd. — Cultivating Growth, Nourishing Nations"
+              width={775}
+              height={654}
+              className="h-auto w-44"
+            />
+          </ScrollTopLink>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
             Pure, natural, nutritious produce and agribusiness services across Nigeria.
           </p>
@@ -56,9 +60,9 @@ export default function Footer({ whatsapp, social = [] }: { whatsapp?: string | 
           <ul className="mt-4 space-y-2.5 text-sm">
             {verticals.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className={linkCls}>
+                <ScrollTopLink href={l.href} className={linkCls}>
                   {l.label}
-                </Link>
+                </ScrollTopLink>
               </li>
             ))}
           </ul>
@@ -69,9 +73,9 @@ export default function Footer({ whatsapp, social = [] }: { whatsapp?: string | 
           <ul className="mt-4 space-y-2.5 text-sm">
             {company.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className={linkCls}>
+                <ScrollTopLink href={l.href} className={linkCls}>
                   {l.label}
-                </Link>
+                </ScrollTopLink>
               </li>
             ))}
           </ul>
@@ -100,9 +104,9 @@ export default function Footer({ whatsapp, social = [] }: { whatsapp?: string | 
             )}
             <li className="flex gap-3">
               <Globe size={18} className="mt-0.5 shrink-0 text-kb-gold" aria-hidden="true" />
-              <a href="https://kingboostfarms.com.ng" className={linkCls}>
+              <ScrollTopLink href="/" className={linkCls}>
                 kingboostfarms.com.ng
-              </a>
+              </ScrollTopLink>
             </li>
           </ul>
         </div>
@@ -112,6 +116,7 @@ export default function Footer({ whatsapp, social = [] }: { whatsapp?: string | 
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-5 py-5 text-xs text-white/55">
           <p>© {new Date().getFullYear()} KingBoost Farms Ltd. All rights reserved.</p>
           <p className="font-display italic">Cultivating Growth, Nourishing Nations</p>
+          <BackToTop />
         </div>
       </div>
     </footer>
