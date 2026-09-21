@@ -16,6 +16,7 @@ export default function GalleryUploader({ categories }: { categories: Category[]
   const [error, setError] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [caption, setCaption] = useState("");
+  const [featured, setFeatured] = useState(false);
 
   async function handlePublish() {
     if (images.length === 0) return;
@@ -27,6 +28,7 @@ export default function GalleryUploader({ categories }: { categories: Category[]
         image_url: url,
         caption: caption.trim() || null,
         category_id: categoryId || null,
+        ...(featured ? { featured: true } : {}),
       }))
     );
 
@@ -68,6 +70,16 @@ export default function GalleryUploader({ categories }: { categories: Category[]
           <input value={caption} onChange={(e) => setCaption(e.target.value)} className={inputCls} />
         </Field>
       </div>
+
+      <label className="flex items-center gap-2 text-sm text-kb-charcoal">
+        <input
+          type="checkbox"
+          checked={featured}
+          onChange={(e) => setFeatured(e.target.checked)}
+          className="h-4 w-4 accent-[#2E7D32]"
+        />
+        Also show these in the homepage slider
+      </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 

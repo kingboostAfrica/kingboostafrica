@@ -1,5 +1,6 @@
 import { Leaf, Users, MapPin, Target } from "lucide-react";
 import { getPageContent, pick } from "@/lib/content";
+import Image from "next/image";
 import PageHeader from "@/components/PageHeader";
 
 // Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
@@ -30,6 +31,9 @@ export default async function AboutPage() {
   const rows = await getPageContent("about");
   const intro = pick(rows, "intro", "main");
   const paragraphs = (intro?.body ?? introDefault).split("\n\n");
+  const leader = pick(rows, "leader", "ceo");
+  const ceoName = leader?.title?.trim();
+  const ceoText = (leader?.body ?? "").split("\n\n").filter(Boolean);
 
   return (
     <>
@@ -48,6 +52,38 @@ export default async function AboutPage() {
           {p}
         </p>
       ))}
+
+      {leader?.image_url && (
+        <section
+          aria-labelledby="ceo-heading"
+          className="mb-14 grid items-center gap-8 rounded-2xl bg-kb-mist p-6 sm:p-8 md:grid-cols-[17rem_1fr] md:gap-12"
+        >
+          <div className="relative mx-auto w-full max-w-xs">
+            <div className="absolute -bottom-3 -right-3 hidden h-full w-full rounded-2xl border-2 border-kb-gold/60 sm:block" aria-hidden="true" />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-lg ring-1 ring-kb-forest/10">
+              <Image
+                src={leader.image_url}
+                alt={ceoName ? `${ceoName}, Chief Executive Officer of KingBoostFarms` : "The Chief Executive Officer of KingBoostFarms"}
+                fill
+                sizes="(min-width: 768px) 17rem, 80vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+          <div>
+            {ceoName && <p className="text-sm font-semibold text-kb-gold-dark">Chief Executive Officer</p>}
+            <h2 id="ceo-heading" className="mt-1 font-display text-3xl font-bold text-kb-forest">
+              {ceoName ?? "Meet our Chief Executive Officer"}
+            </h2>
+            <div className="mt-2 h-1 w-12 rounded-full bg-kb-gold" aria-hidden="true" />
+            <div className="mt-5 space-y-4 text-lg leading-relaxed text-kb-charcoal/75">
+              {(ceoText.length ? ceoText : ["Leading KingBoostFarms in its mission to cultivate growth and nourish nations."]).map((t, i) => (
+                <p key={i}>{t}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="grid sm:grid-cols-2 gap-6 mb-14">
         {verticalDefaults.map((v) => {

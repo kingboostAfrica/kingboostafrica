@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin";
 import type { Category, GalleryItem } from "@/lib/types";
 import GalleryUploader from "@/components/admin/GalleryUploader";
 import DeleteButton from "@/components/admin/DeleteButton";
+import FeaturedToggle from "@/components/admin/FeaturedToggle";
 
 export default async function AdminGalleryPage() {
   const { supabase } = await requireAdmin();
@@ -18,7 +19,12 @@ export default async function AdminGalleryPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
-      <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-8">Gallery</h1>
+      <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-2">Gallery</h1>
+      <p className="text-kb-charcoal/60 mb-8">
+        Photos here appear on the Gallery page. Tick <strong>Show in homepage slider</strong> on up to five of them to
+        put them in the moving photo slider on the homepage, after your main hero photo. If you tick none, the latest
+        photos are used.
+      </p>
 
       <GalleryUploader categories={cats} />
 
@@ -52,6 +58,9 @@ export default async function AdminGalleryPage() {
                   </p>
                 </div>
                 <DeleteButton table="gallery_items" id={item.id} confirmText="Remove this photo from the gallery?" />
+              </div>
+              <div className="px-3 pb-3">
+                <FeaturedToggle id={item.id} featured={Boolean(item.featured)} />
               </div>
             </div>
           ))}

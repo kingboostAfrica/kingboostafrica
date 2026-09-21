@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowRight,
   Leaf,
@@ -17,6 +16,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import type { Product } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
 import { FieldArt, FieldLines } from "@/components/FieldArt";
+import HeroSlider, { type Slide } from "@/components/HeroSlider";
 
 // Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
 export const revalidate = 60;
@@ -37,9 +37,33 @@ const trustDefaults = [
 
 const trustIconMap = { ShieldCheck, Sprout, Leaf };
 
+async function loadGallerySlides(): Promise<Slide[]> {
+  const db = createPublicClient();
+  const toSlide = (r: { image_url: string; caption: string | null }): Slide => ({
+    src: r.image_url,
+    alt: r.caption || "KingBoostFarms photo",
+    caption: r.caption,
+  });
+  // Photos ticked "Show in homepage slider"; if none are ticked (or the column is not there yet),
+  // fall back to the latest gallery photos so the slider is never empty.
+  const marked = await db
+    .from("gallery_items")
+    .select("image_url, caption")
+    .eq("featured", true)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  if (!marked.error && marked.data && marked.data.length > 0) return marked.data.map(toSlide);
+  const latest = await db
+    .from("gallery_items")
+    .select("image_url, caption")
+    .order("created_at", { ascending: false })
+    .limit(4);
+  return (latest.data ?? []).map(toSlide);
+}
+
 export default async function Home() {
   const supabase = createPublicClient();
-  const [rows, { data: featured }] = await Promise.all([
+  const [rows, { data: featured }, gallerySlides] = await Promise.all([
     getPageContent("home"),
     supabase
       .from("products")
@@ -48,10 +72,20 @@ export default async function Home() {
       .gt("stock", 0)
       .order("created_at", { ascending: false })
       .limit(4),
+    loadGallerySlides(),
   ]);
 
   const hero = pick(rows, "hero", "main");
   const products = (featured as Product[] | null) ?? [];
+
+  // Slides: the hero photo from Site Content first, then the gallery photos marked for the slider
+  // (or, until any are marked, the latest ones). No duplicates, at most six.
+  const slides: Slide[] = [
+    ...(hero?.image_url ? [{ src: hero.image_url, alt: "KingBoostFarms" }] : []),
+    ...gallerySlides,
+  ]
+    .filter((sl, i, all) => all.findIndex((o) => o.src === sl.src) === i)
+    .slice(0, 6);
 
   const [foodMart, ...others] = verticalDefaults;
   const vertical = (v: (typeof verticalDefaults)[number]) => {
@@ -112,15 +146,8 @@ export default async function Home() {
               aria-hidden="true"
             />
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/15">
-              {hero?.image_url ? (
-                <Image
-                  src={hero.image_url}
-                  alt="KingBoostFarms"
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 32rem, 90vw"
-                  className="object-cover"
-                />
+              {slides.length > 0 ? (
+                <HeroSlider slides={slides} />
               ) : (
                 <>
                   <FieldArt className="absolute inset-0 h-full w-full" />

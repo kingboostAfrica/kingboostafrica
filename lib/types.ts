@@ -30,6 +30,7 @@ export interface GalleryItem {
   category_id: string | null;
   image_url: string;
   caption: string | null;
+  featured?: boolean;
   created_at: string;
 }
 

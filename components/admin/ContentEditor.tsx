@@ -47,14 +47,15 @@ export default function ContentEditor({
         const sectionRows = rows
           .filter((r) => r.section === section)
           .sort((a, b) => a.sort_order - b.sort_order);
-        const showIcon = section !== "hero" && section !== "intro";
-        // Only the homepage hero has a photo slot today.
-        const showImage = section === "hero";
+        const isLeader = section === "leader";
+        const showIcon = section !== "hero" && section !== "intro" && !isLeader;
+        // Photo slots: the homepage hero photo and the CEO photo on the About page.
+        const showImage = section === "hero" || isLeader;
 
         return (
           <div key={section}>
             <h2 className="text-sm font-semibold uppercase tracking-wider text-kb-gold-dark mb-4">
-              {section.replace(/_/g, " ")}
+              {isLeader ? "CEO profile (About page)" : section.replace(/_/g, " ")}
             </h2>
             <div className="grid sm:grid-cols-2 gap-5">
               {sectionRows.map((row) => (
@@ -76,7 +77,7 @@ export default function ContentEditor({
 
                   <div>
                     <label className="block text-xs font-medium text-kb-charcoal/60 mb-1">
-                      Title
+                      {isLeader ? "CEO's name (leave empty to show just the job title)" : "Title"}
                     </label>
                     <input
                       value={row.title ?? ""}
@@ -87,7 +88,7 @@ export default function ContentEditor({
 
                   <div>
                     <label className="block text-xs font-medium text-kb-charcoal/60 mb-1">
-                      Body
+                      {isLeader ? "Short message or biography" : "Body"}
                     </label>
                     <textarea
                       rows={4}
@@ -100,7 +101,7 @@ export default function ContentEditor({
                   {showImage && (
                     <div>
                       <label className="block text-xs font-medium text-kb-charcoal/60 mb-1">
-                        Hero photo (optional)
+                        {isLeader ? "CEO photo" : "Main hero photo (optional)"}
                       </label>
                       <ImageUploader
                         value={row.image_url ? [row.image_url] : []}
@@ -108,9 +109,9 @@ export default function ContentEditor({
                         onBusyChange={setUploading}
                       />
                       <p className="mt-2 text-xs text-kb-charcoal/50">
-                        Shown on laptop and desktop screens. A portrait photo (about 4 wide by 5 tall)
-                        works best. Remove it to go back to the farmland artwork. Click Save Changes
-                        below after uploading.
+                        {isLeader
+                          ? "Shown beside the CEO's message on the About page. A portrait photo (about 4 wide by 5 tall) works best. Click Save Changes below after uploading."
+                          : "This is the first photo in the homepage slider. More photos come from the Gallery (tick Show in homepage slider there). A portrait photo (about 4 wide by 5 tall) works best. Remove it to go back to the farmland artwork. Click Save Changes below after uploading."}
                       </p>
                     </div>
                   )}
