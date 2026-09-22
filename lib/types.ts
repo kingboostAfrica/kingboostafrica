@@ -53,6 +53,7 @@ export interface Order {
   cancel_requested_at?: string | null;
   refund_status?: "queued" | "processed" | "failed" | null;
   refund_note?: string | null;
+  cancel_token?: string;
   fulfilment_method?: "delivery" | "pickup";
   delivery_zone?: string | null;
   created_at: string;

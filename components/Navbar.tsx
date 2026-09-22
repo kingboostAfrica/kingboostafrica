@@ -45,7 +45,7 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
   if (pathname.startsWith("/admin")) return null;
 
   return (
-    <>
+    <div className="print:hidden">
       {/* Utility bar */}
       <div className="hidden bg-kb-forest text-white/80 sm:block">
         <div className="mx-auto flex h-9 max-w-6xl items-center justify-between px-5 text-xs">
@@ -188,6 +188,6 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
           </nav>
         )}
       </header>
-    </>
+    </div>
   );
 }

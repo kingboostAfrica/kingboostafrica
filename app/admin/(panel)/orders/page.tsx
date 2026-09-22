@@ -1,7 +1,8 @@
 import { requireStaff } from "@/lib/admin";
 import type { Order, OrderItem } from "@/lib/types";
 import StatusSelect from "@/components/admin/StatusSelect";
-import { MapPin, Phone, MessageCircle } from "lucide-react";
+import { MapPin, Phone, MessageCircle, Receipt, ClipboardList } from "lucide-react";
+import Link from "next/link";
 import { formatNaira } from "@/lib/pricing";
 import CancelRequestActions from "@/components/admin/CancelRequestActions";
 
@@ -229,6 +230,12 @@ export default async function AdminOrdersPage() {
                       <MessageCircle size={14} className="text-kb-green" /> WhatsApp
                     </a>
                   )}
+                  <Link href={`/order/receipt/${o.cancel_token}`} target="_blank" className="flex items-center gap-1.5 hover:text-kb-green">
+                    <Receipt size={14} className="text-kb-green" /> Receipt
+                  </Link>
+                  <Link href={`/admin/orders/${o.id}/packing-slip`} className="flex items-center gap-1.5 hover:text-kb-green">
+                    <ClipboardList size={14} className="text-kb-green" /> Packing slip
+                  </Link>
                 </div>
               </div>
             );

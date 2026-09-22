@@ -18,6 +18,7 @@ const verticals = [
 const company = [
   { href: "/about", label: "About us" },
   { href: "/gallery", label: "Gallery" },
+  { href: "/track-order", label: "Track my order" },
   { href: "/contact", label: "Contact us" },
   { href: "/delivery-and-refunds", label: "Delivery & refunds" },
   { href: "/privacy-policy", label: "Privacy policy" },
@@ -28,7 +29,7 @@ const linkCls = "text-white/70 transition-colors hover:text-kb-gold";
 
 export default function Footer({ whatsapp, social = [] }: { whatsapp?: string | null; social?: SocialLink[] }) {
   return (
-    <footer className="relative overflow-hidden bg-kb-forest text-white">
+    <footer className="relative overflow-hidden bg-kb-forest text-white print:hidden">
       <ScrollAfterNavigation />
       <div className="h-1 bg-kb-gold" aria-hidden="true" />
       <FieldLines className="pointer-events-none absolute inset-y-0 right-0 h-full w-full opacity-60 lg:w-2/3" />

@@ -27,7 +27,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-kb-charcoal/[0.02]">
-      <header className="sticky top-0 z-40 bg-kb-forest border-b-2 border-kb-gold">
+      <header className="sticky top-0 z-40 bg-kb-forest border-b-2 border-kb-gold print:hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 h-16 flex items-center justify-between gap-2 sm:gap-6">
           <Link href="/admin" className="flex shrink-0 items-center gap-3">
             <Image src="/kingboost-icon-light.png" alt="" width={32} height={44} className="h-10 w-auto" />
@@ -55,7 +55,9 @@ export default async function AdminLayout({
           </div>
         </div>
       </header>
-      <AdminBackBar isAdmin={role === "admin"} />
+      <div className="print:hidden">
+        <AdminBackBar isAdmin={role === "admin"} />
+      </div>
       <main>{children}</main>
     </div>
   );

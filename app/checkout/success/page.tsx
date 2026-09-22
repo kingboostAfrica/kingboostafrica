@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import ClearCart from "@/components/ClearCart";
 import { confirmPayment } from "@/lib/paystack";
 import { cancelEnabled, isToken } from "@/lib/order-cancel";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { formatNaira } from "@/lib/pricing";
 
 export const metadata = { title: "Order — KingBoostFarms" };
@@ -23,6 +24,12 @@ export default async function CheckoutSuccessPage({
     const checkAgain = `/checkout/success?order=${encodeURIComponent(order ?? "")}&reference=${encodeURIComponent(ref)}`;
 
     if (result.state === "paid") {
+      let trackToken: string | null = null;
+      if (result.orderId) {
+        const admin = createAdminClient();
+        const { data } = (await admin?.from("orders").select("cancel_token").eq("id", result.orderId).maybeSingle()) ?? {};
+        trackToken = data?.cancel_token ?? null;
+      }
       return (
         <>
           <PageHeader title="Payment received" />
@@ -44,6 +51,13 @@ export default async function CheckoutSuccessPage({
               </p>
             ) : null}
             <Link href="/food-mart" className="btn btn-primary">Continue shopping</Link>
+            {trackToken && (
+              <p className="mt-6 text-sm text-kb-charcoal/60">
+                <Link href={`/order/track/${trackToken}`} className="font-semibold text-kb-green hover:underline">
+                  Track this order
+                </Link>
+              </p>
+            )}
           </div>
         </>
       );
@@ -124,7 +138,10 @@ export default async function CheckoutSuccessPage({
         <Link href="/food-mart" className="btn btn-primary">Continue shopping</Link>
         {cancelEnabled() && isToken(t) && (
           <p className="mt-6 text-sm text-kb-charcoal/60">
-            Changed your mind?{" "}
+            <Link href={`/order/track/${t}`} className="font-semibold text-kb-green hover:underline">
+              Track this order
+            </Link>
+            {" · "}
             <Link href={`/order/cancel/${t}`} className="font-semibold text-kb-green hover:underline">
               Cancel this order
             </Link>

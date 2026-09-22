@@ -13,12 +13,18 @@ export default function StoreSettingsForm({
   pickupAddress,
   pickupInstructions,
   whatsappNumber,
+  businessPhone,
+  businessRc,
+  businessTin,
 }: {
   vatPercent: number;
   pickupEnabled: boolean;
   pickupAddress: string;
   pickupInstructions: string;
   whatsappNumber: string;
+  businessPhone: string;
+  businessRc: string;
+  businessTin: string;
 }) {
   const supabase = createClient();
   const [vat, setVat] = useState(String(vatPercent));
@@ -26,6 +32,9 @@ export default function StoreSettingsForm({
   const [address, setAddress] = useState(pickupAddress);
   const [instructions, setInstructions] = useState(pickupInstructions);
   const [whatsapp, setWhatsapp] = useState(whatsappNumber);
+  const [phone, setPhone] = useState(businessPhone);
+  const [rc, setRc] = useState(businessRc);
+  const [tin, setTin] = useState(businessTin);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -52,6 +61,9 @@ export default function StoreSettingsForm({
     setMessage(null);
     const { error } = await supabase.from("store_settings").upsert({
       whatsapp_number: wa || null,
+      business_phone: phone.trim() || null,
+      business_rc: rc.trim() || null,
+      business_tin: tin.trim() || null,
       id: 1,
       vat_percent: vatNum,
       pickup_enabled: pickupOn,
@@ -150,6 +162,24 @@ export default function StoreSettingsForm({
               placeholder="0803 123 4567"
               className={inputCls}
             />
+          </Field>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-display text-xl font-bold text-kb-forest mb-1">Receipt details</h2>
+        <p className="text-sm text-kb-charcoal/60 mb-4">
+          Optional. Shown on printable customer receipts, under your business address.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="Business phone">
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0803 123 4567" className={inputCls} />
+          </Field>
+          <Field label="RC number">
+            <input value={rc} onChange={(e) => setRc(e.target.value)} placeholder="1234567" className={inputCls} />
+          </Field>
+          <Field label="TIN">
+            <input value={tin} onChange={(e) => setTin(e.target.value)} placeholder="12345678-0001" className={inputCls} />
           </Field>
         </div>
       </section>
