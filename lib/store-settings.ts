@@ -71,3 +71,37 @@ export async function getSocialLinks(): Promise<SocialLink[]> {
     return [];
   }
 }
+
+export type ContactInfo = { phone: string | null; address: string; mapUrl: string };
+
+// The public phone number and a ready-made Google Maps link, for the Contact and Checkout pages.
+// The phone number is set in Admin > Settings ("Receipt & contact details").
+export async function getContactInfo(): Promise<ContactInfo> {
+  const address = "8 Ibudo Oloja Street, Igbanko, Badagry, Lagos State, Nigeria";
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  try {
+    const { data } = await createPublicClient()
+      .from("store_settings")
+      .select("business_phone")
+      .eq("id", 1)
+      .maybeSingle();
+    return { phone: data?.business_phone || null, address, mapUrl };
+  } catch {
+    return { phone: null, address, mapUrl };
+  }
+}
+
+// The site-wide "low stock" number (Admin > Settings). A product without its own threshold uses this.
+export async function getDefaultLowStockThreshold(): Promise<number | null> {
+  try {
+    const { data } = await createPublicClient()
+      .from("store_settings")
+      .select("low_stock_threshold")
+      .eq("id", 1)
+      .maybeSingle();
+    const n = Number(data?.low_stock_threshold);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  } catch {
+    return null;
+  }
+}

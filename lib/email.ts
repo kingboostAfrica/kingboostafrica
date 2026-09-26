@@ -151,6 +151,8 @@ export type OrderExtras = {
   vat?: number;
   vatPercent?: number;
   delivery?: number;
+  discount?: number;
+  discountCode?: string | null;
 };
 
 export function orderTable(lines: OrderLine[], total: number, extras?: OrderExtras): string {
@@ -166,11 +168,13 @@ export function orderTable(lines: OrderLine[], total: number, extras?: OrderExtr
 
   const vat = extras?.vat ?? 0;
   const delivery = extras?.delivery ?? 0;
+  const discount = extras?.discount ?? 0;
   const line = (label: string, value: number) =>
     `<tr><td style="padding:6px 0 0;color:#6b756f;">${label}</td><td align="right" style="padding:6px 0 0;color:#6b756f;white-space:nowrap;">${naira(value)}</td></tr>`;
   const breakdown =
-    vat > 0 || delivery > 0
+    vat > 0 || delivery > 0 || discount > 0
       ? line("Subtotal", extras?.subtotal ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0)) +
+        (discount > 0 ? line(`Discount${extras?.discountCode ? ` (${extras.discountCode})` : ""}`, -discount) : "") +
         (vat > 0 ? line(`VAT (${extras?.vatPercent ?? ""}%)`, vat) : "") +
         (delivery > 0 ? line("Delivery", delivery) : "")
       : "";

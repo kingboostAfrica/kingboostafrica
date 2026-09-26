@@ -1,15 +1,17 @@
 import { requireStaff } from "@/lib/admin";
 import type { Enrollment, ConsultingBooking, Inquiry } from "@/lib/types";
-import { GraduationCap, Briefcase, Mail } from "lucide-react";
+import { GraduationCap, Briefcase, Mail, Package2 } from "lucide-react";
+import type { QuoteRequest } from "@/lib/types";
 import StatusSelect from "@/components/admin/StatusSelect";
 
 const REQUEST_STATUSES = ["pending", "confirmed", "cancelled"];
 const INQUIRY_STATUSES = ["new", "contacted", "closed"];
+const QUOTE_STATUSES = ["new", "contacted", "closed"];
 
 export default async function AdminMessagesPage() {
   const { supabase } = await requireStaff();
 
-  const [{ data: enrollments }, { data: bookings }, { data: inquiries }] = await Promise.all([
+  const [{ data: enrollments }, { data: bookings }, { data: inquiries }, { data: quotes }] = await Promise.all([
     supabase
       .from("enrollments")
       .select("*, course:courses(title)")
@@ -19,17 +21,53 @@ export default async function AdminMessagesPage() {
       .select("*, service:consulting_services(title)")
       .order("created_at", { ascending: false }),
     supabase.from("inquiries").select("*").order("created_at", { ascending: false }),
+    supabase.from("quote_requests").select("*").order("created_at", { ascending: false }),
   ]);
 
   const enrollList = (enrollments as Enrollment[] | null) || [];
   const bookingList = (bookings as ConsultingBooking[] | null) || [];
   const inquiryList = (inquiries as Inquiry[] | null) || [];
+  const quoteList = (quotes as QuoteRequest[] | null) || [];
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-10">
         Messages
       </h1>
+
+      <section className="mb-12">
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold text-kb-charcoal mb-4">
+          <Package2 size={20} className="text-kb-green" /> Bulk Quote Requests
+        </h2>
+        {quoteList.length === 0 ? (
+          <p className="text-sm text-kb-charcoal/50">No quote requests yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {quoteList.map((q) => (
+              <div key={q.id} className="p-4 border border-kb-green/15 rounded-xl flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-kb-charcoal">
+                    {q.contact_name} {q.company_name && <span className="text-kb-charcoal/40 font-normal">— {q.company_name}</span>}
+                  </p>
+                  <p className="text-sm text-kb-charcoal/60">
+                    <a href={`mailto:${q.email}`} className="hover:text-kb-green">{q.email}</a> {q.phone ? `· ${q.phone}` : ""}
+                  </p>
+                  <ul className="mt-2 space-y-0.5 text-sm text-kb-charcoal/70">
+                    {q.items.map((it, idx) => (
+                      <li key={idx}>
+                        {it.quantity}{it.unit ? ` ${it.unit}` : ""} × {it.name}
+                      </li>
+                    ))}
+                  </ul>
+                  {q.message && <p className="mt-2 text-sm text-kb-charcoal/70 whitespace-pre-wrap">{q.message}</p>}
+                  <p className="text-xs text-kb-charcoal/40 mt-2">{new Date(q.created_at).toLocaleString()}</p>
+                </div>
+                <StatusSelect table="quote_requests" id={q.id} value={q.status} options={QUOTE_STATUSES} />
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="mb-12">
         <h2 className="flex items-center gap-2 font-display text-lg font-bold text-kb-charcoal mb-4">

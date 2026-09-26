@@ -16,6 +16,7 @@ export default function StoreSettingsForm({
   businessPhone,
   businessRc,
   businessTin,
+  lowStockThreshold,
 }: {
   vatPercent: number;
   pickupEnabled: boolean;
@@ -25,6 +26,7 @@ export default function StoreSettingsForm({
   businessPhone: string;
   businessRc: string;
   businessTin: string;
+  lowStockThreshold: string;
 }) {
   const supabase = createClient();
   const [vat, setVat] = useState(String(vatPercent));
@@ -35,6 +37,7 @@ export default function StoreSettingsForm({
   const [phone, setPhone] = useState(businessPhone);
   const [rc, setRc] = useState(businessRc);
   const [tin, setTin] = useState(businessTin);
+  const [lowStock, setLowStock] = useState(lowStockThreshold);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -64,6 +67,7 @@ export default function StoreSettingsForm({
       business_phone: phone.trim() || null,
       business_rc: rc.trim() || null,
       business_tin: tin.trim() || null,
+      low_stock_threshold: lowStock.trim() ? parseInt(lowStock, 10) : null,
       id: 1,
       vat_percent: vatNum,
       pickup_enabled: pickupOn,
@@ -167,12 +171,13 @@ export default function StoreSettingsForm({
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-bold text-kb-forest mb-1">Receipt details</h2>
+        <h2 className="font-display text-xl font-bold text-kb-forest mb-1">Receipt &amp; contact details</h2>
         <p className="text-sm text-kb-charcoal/60 mb-4">
-          Optional. Shown on printable customer receipts, under your business address.
+          The phone number also appears on the public Contact and Checkout pages. RC and TIN are optional and only
+          shown on printable receipts.
         </p>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Business phone">
+          <Field label="Business phone (public)">
             <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0803 123 4567" className={inputCls} />
           </Field>
           <Field label="RC number">
@@ -180,6 +185,27 @@ export default function StoreSettingsForm({
           </Field>
           <Field label="TIN">
             <input value={tin} onChange={(e) => setTin(e.target.value)} placeholder="12345678-0001" className={inputCls} />
+          </Field>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-display text-xl font-bold text-kb-forest mb-1">Low stock alerts</h2>
+        <p className="text-sm text-kb-charcoal/60 mb-4">
+          The site-wide number that triggers an email and an &ldquo;Only N left&rdquo; badge. A product can override
+          this in its own Edit page. Leave empty to switch alerts off by default.
+        </p>
+        <div className="max-w-xs">
+          <Field label="Alert when stock reaches">
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={lowStock}
+              onChange={(e) => setLowStock(e.target.value)}
+              placeholder="e.g. 5"
+              className={inputCls}
+            />
           </Field>
         </div>
       </section>

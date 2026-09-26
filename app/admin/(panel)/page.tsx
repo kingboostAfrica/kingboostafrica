@@ -14,6 +14,9 @@ import {
   UserCog,
   Share2,
   AlertCircle,
+  Ticket,
+  ClipboardList,
+  UploadCloud,
 } from "lucide-react";
 
 type Tool = {
@@ -45,6 +48,7 @@ export default async function AdminDashboardPage() {
     { count: pendingEnrollments },
     { count: pendingBookings },
     { count: socialCount },
+    { count: newQuotes },
   ] = await Promise.all([
     count("orders", { column: "status", value: "pending" }),
     // paid orders where the customer has asked to cancel (needs your decision)
@@ -62,9 +66,10 @@ export default async function AdminDashboardPage() {
     count("enrollments", { column: "status", value: "pending" }),
     count("consulting_bookings", { column: "status", value: "pending" }),
     count("social_links"),
+    count("quote_requests", { column: "status", value: "new" }),
   ]);
 
-  const messages = (newInquiries ?? 0) + (pendingEnrollments ?? 0) + (pendingBookings ?? 0);
+  const messages = (newInquiries ?? 0) + (pendingEnrollments ?? 0) + (pendingBookings ?? 0) + (newQuotes ?? 0);
 
   const groups: { title: string; tools: Tool[] }[] = [
     {
@@ -96,7 +101,25 @@ export default async function AdminDashboardPage() {
           href: "/admin/settings",
           icon: Settings,
           label: "Store settings",
-          desc: "VAT, delivery areas and fees, self pickup and WhatsApp number.",
+          desc: "VAT, delivery areas and fees, self pickup, WhatsApp and low-stock alerts.",
+        },
+        {
+          href: "/admin/discounts",
+          icon: Ticket,
+          label: "Discount codes",
+          desc: "Create and manage percentage or fixed-amount discount codes.",
+        },
+        {
+          href: "/admin/stock-log",
+          icon: ClipboardList,
+          label: "Stock log",
+          desc: "See every change to product stock, and who made it.",
+        },
+        {
+          href: "/admin/products/import",
+          icon: UploadCloud,
+          label: "Import products",
+          desc: "Add many products at once from a spreadsheet (CSV).",
         },
       ],
     },
@@ -146,7 +169,7 @@ export default async function AdminDashboardPage() {
           href: "/admin/messages",
           icon: Inbox,
           label: "Messages and sign-ups",
-          desc: "Inquiries, course enrollments and consulting requests.",
+          desc: "Inquiries, course enrollments, consulting requests and bulk quote requests.",
           badge: `${messages} need attention`,
           attention: messages > 0,
         },

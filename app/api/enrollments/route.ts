@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail, looksLikeBot } from "@/lib/validation";
 import { notifyOwner } from "@/lib/email";
+import { sendEnrollmentReceivedEmail } from "@/lib/order-emails";
 
 export async function POST(request: Request) {
   try {
@@ -44,6 +45,11 @@ export async function POST(request: Request) {
       "/admin/messages",
       "Open sign-ups in admin"
     );
+    try {
+      await sendEnrollmentReceivedEmail({ name: full_name, email, courseTitle: course?.title ?? "your course" });
+    } catch (err) {
+      console.error("Enrollment confirmation email error:", err);
+    }
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Enrollment error:", err);

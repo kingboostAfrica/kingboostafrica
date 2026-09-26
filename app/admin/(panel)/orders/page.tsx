@@ -191,9 +191,15 @@ export default async function AdminOrdersPage() {
                   })}
                 </ul>
 
-                {(Number(o.vat_amount ?? 0) > 0 || Number(o.delivery_fee ?? 0) > 0) && (
+                {(Number(o.vat_amount ?? 0) > 0 || Number(o.delivery_fee ?? 0) > 0 || Number(o.discount_amount ?? 0) > 0) && (
                   <div className="mt-3 space-y-0.5 border-t border-kb-forest/10 pt-3 text-xs text-kb-charcoal/60">
                     <p className="flex justify-between"><span>Subtotal</span><span>{formatNaira(Number(o.subtotal_amount ?? 0))}</span></p>
+                    {Number(o.discount_amount ?? 0) > 0 && (
+                      <p className="flex justify-between text-kb-green">
+                        <span>Discount{o.discount_code ? ` (${o.discount_code})` : ""}</span>
+                        <span>-{formatNaira(Number(o.discount_amount))}</span>
+                      </p>
+                    )}
                     {Number(o.vat_amount ?? 0) > 0 && (
                       <p className="flex justify-between"><span>VAT ({Number(o.vat_percent ?? 0)}%)</span><span>{formatNaira(Number(o.vat_amount))}</span></p>
                     )}

@@ -120,11 +120,17 @@ export default async function ReceiptPage({ params }: { params: Promise<{ token:
         </table>
 
         <div className="ml-auto mt-4 max-w-xs space-y-1 text-sm">
-          {(vat > 0 || delivery > 0) && (
+          {(vat > 0 || delivery > 0 || (extras?.discount ?? 0) > 0) && (
             <>
               <p className="flex justify-between text-kb-charcoal/70">
                 <span>Subtotal</span><span>{formatNaira(extras?.subtotal ?? 0)}</span>
               </p>
+              {(extras?.discount ?? 0) > 0 && (
+                <p className="flex justify-between text-kb-green">
+                  <span>Discount{extras?.discountCode ? ` (${extras.discountCode})` : ""}</span>
+                  <span>-{formatNaira(extras!.discount!)}</span>
+                </p>
+              )}
               {vat > 0 && (
                 <p className="flex justify-between text-kb-charcoal/70">
                   <span>VAT ({extras?.vatPercent}%)</span><span>{formatNaira(vat)}</span>

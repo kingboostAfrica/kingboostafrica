@@ -2,9 +2,17 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/types";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({
+  product,
+  lowStockDefault = null,
+}: {
+  product: Product;
+  lowStockDefault?: number | null;
+}) {
   const image = product.images?.[0];
   const soldOut = product.stock <= 0;
+  const threshold = product.low_stock_threshold ?? lowStockDefault;
+  const lowStock = !soldOut && threshold != null && product.stock <= threshold;
 
   return (
     <Link href={`/products/${product.slug}`} className="card group block">
@@ -24,10 +32,16 @@ export default function ProductCard({ product }: { product: Product }) {
             No image
           </div>
         )}
-        {soldOut && (
+        {soldOut ? (
           <span className="absolute left-3 top-3 rounded-md bg-kb-charcoal px-2.5 py-1 text-xs font-semibold text-white">
             Out of stock
           </span>
+        ) : (
+          lowStock && (
+            <span className="absolute left-3 top-3 rounded-md bg-kb-gold px-2.5 py-1 text-xs font-semibold text-kb-forest">
+              Only {product.stock} left
+            </span>
+          )
         )}
       </div>
       <div className="p-4">

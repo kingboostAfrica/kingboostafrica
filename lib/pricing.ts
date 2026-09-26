@@ -13,8 +13,10 @@ export function formatNaira(n: number): string {
   );
 }
 
-export function computeTotals(subtotal: number, vatPercent: number, deliveryFee: number) {
-  const vat = Math.round(subtotal * vatPercent) / 100; // same rounding as the database: 2 decimals
-  const total = Math.round((subtotal + vat + deliveryFee) * 100) / 100;
-  return { subtotal, vat, delivery: deliveryFee, total };
+export function computeTotals(subtotal: number, vatPercent: number, deliveryFee: number, discount = 0) {
+  const cappedDiscount = Math.min(Math.max(discount, 0), subtotal);
+  const taxable = subtotal - cappedDiscount;
+  const vat = Math.round(taxable * vatPercent) / 100; // same rounding as the database: 2 decimals
+  const total = Math.round((taxable + vat + deliveryFee) * 100) / 100;
+  return { subtotal, discount: cappedDiscount, vat, delivery: deliveryFee, total };
 }

@@ -18,6 +18,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidateCatalog } from "@/lib/revalidate-server";
 import { SITE_URL } from "@/lib/site";
 import { initializeTransaction, makeReference, paystackEnabled, toKobo } from "@/lib/paystack";
+import { alertOwnerLowStock } from "@/lib/order-emails";
 
 // Places an order through the database function `place_order()`
 // (see supabase/002_hardening_and_admin.sql).
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
     const method: "delivery" | "pickup" = body.fulfilmentMethod === "pickup" ? "pickup" : "delivery";
     const zoneRaw = clean(body.zoneId, 64);
     const zoneId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(zoneRaw) ? zoneRaw : null;
+    const discountCode = clean(body.discountCode, 40) || null;
 
     if (!buyerName || !isEmail(buyerEmail) || (method === "delivery" && !deliveryAddress)) {
       return NextResponse.json(
@@ -65,13 +67,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
     }
 
-    const items = rawItems.map((i: { product?: { id?: unknown }; quantity?: unknown }) => ({
+    const rawParsed = rawItems.map((i: { product?: { id?: unknown }; quantity?: unknown }) => ({
       product_id: i?.product?.id,
       quantity: Number(i?.quantity),
     }));
 
     if (
-      items.some(
+      rawParsed.some(
         (i) =>
           typeof i.product_id !== "string" ||
           !Number.isInteger(i.quantity) ||
@@ -81,6 +83,7 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json({ error: "Your cart has an invalid item." }, { status: 400 });
     }
+    const items = rawParsed as { product_id: string; quantity: number }[];
 
     // Housekeeping: unpaid online orders older than 3 hours release their stock.
     if (paystackEnabled()) {
@@ -100,13 +103,14 @@ export async function POST(request: Request) {
       p_items: items,
       p_method: method,
       p_zone_id: method === "delivery" ? zoneId : null,
+      p_discount_code: discountCode,
     });
 
     if (error) {
       // Messages raised on purpose inside place_order() are safe to show
       // (stock / availability). Anything else is logged and hidden.
       const friendly =
-        /left in stock|no longer available|Invalid quantity|cart is empty|delivery area|Self pickup is not available|Invalid delivery option|Delivery address is required/i.test(error.message);
+        /left in stock|no longer available|Invalid quantity|cart is empty|delivery area|Self pickup is not available|Invalid delivery option|Delivery address is required|discount code|used up/i.test(error.message);
       if (friendly) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }
@@ -120,6 +124,8 @@ export async function POST(request: Request) {
       vat?: number;
       vat_percent?: number;
       delivery?: number;
+      discount?: number;
+      discount_code?: string | null;
       method?: string;
       zone?: string | null;
       address?: string;
@@ -127,6 +133,9 @@ export async function POST(request: Request) {
       cancel_token?: string;
     };
     revalidateCatalog(); // stock just went down
+
+    // Low-stock alerts: fire-and-forget, must never hold up the customer's checkout.
+    checkLowStock(items).catch((err) => console.error("Low stock check failed:", err));
 
     // ---- Pay online: hand the customer to Paystack. Emails are sent once payment is confirmed. ----
     if (wantsOnline) {
@@ -178,6 +187,8 @@ export async function POST(request: Request) {
                 vat: Number(result.vat ?? 0),
                 vatPercent: Number(result.vat_percent ?? 0),
                 delivery: Number(result.delivery ?? 0),
+                discount: Number(result.discount ?? 0),
+                discountCode: result.discount_code ?? null,
               },
         cancelToken: result.cancel_token,
         fulfilment: {
@@ -283,5 +294,30 @@ async function sendOrderEmails(o: {
         `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">We have received your order <strong>#${ref}</strong> and ${customerNextStep}</p>${table}${fulfilmentBlock}${cancelBlock}<p style="font-size:13px;color:#6b756f;">Questions? Just reply to this email.</p>`
       ),
     });
+  }
+}
+
+/** Sends one owner alert per product that has just crossed below its low-stock threshold. */
+async function checkLowStock(items: { product_id: string; quantity: number }[]) {
+  const admin = createAdminClient();
+  if (!admin || items.length === 0) return;
+
+  const ids = items.map((i) => i.product_id);
+  const [{ data: products }, { data: settings }] = await Promise.all([
+    admin.from("products").select("id, name, unit, stock, low_stock_threshold").in("id", ids),
+    admin.from("store_settings").select("low_stock_threshold").eq("id", 1).maybeSingle(),
+  ]);
+  const siteDefault = Number.isFinite(Number(settings?.low_stock_threshold)) ? Number(settings?.low_stock_threshold) : null;
+
+  for (const item of items) {
+    const p = (products ?? []).find((x) => x.id === item.product_id);
+    if (!p) continue;
+    const threshold = p.low_stock_threshold ?? siteDefault;
+    if (threshold == null) continue;
+    const previousStock = Number(p.stock) + item.quantity;
+    // Only alert on the crossing itself, so repeat purchases below the line don't spam the owner.
+    if (previousStock > threshold && Number(p.stock) <= threshold) {
+      await alertOwnerLowStock({ name: p.name, unit: p.unit, stock: Number(p.stock) }, threshold);
+    }
   }
 }

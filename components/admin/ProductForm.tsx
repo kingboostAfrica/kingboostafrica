@@ -28,6 +28,7 @@ export default function ProductForm({
     price: initial ? String(initial.price) : "",
     unit: initial?.unit ?? "kg",
     stock: initial ? String(initial.stock) : "",
+    lowStockThreshold: initial?.low_stock_threshold != null ? String(initial.low_stock_threshold) : "",
     isActive: initial?.is_active ?? true,
   });
 
@@ -44,10 +45,18 @@ export default function ProductForm({
       return;
     }
 
+    const lowStock = form.lowStockThreshold.trim() ? parseInt(form.lowStockThreshold, 10) : null;
+    if (lowStock != null && (!Number.isFinite(lowStock) || lowStock < 0)) {
+      setError("The low-stock alert number must be 0 or more.");
+      setSubmitting(false);
+      return;
+    }
+
     const payload = {
       category_id: form.categoryId || null,
       name: form.name.trim(),
       description: form.description.trim() || null,
+      low_stock_threshold: lowStock,
       price,
       unit: form.unit.trim() || "kg",
       stock,
@@ -137,6 +146,22 @@ export default function ProductForm({
           />
         </Field>
       </div>
+
+      <Field label="Low-stock alert (optional)">
+        <input
+          type="number"
+          min="0"
+          step="1"
+          value={form.lowStockThreshold}
+          onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })}
+          placeholder="Use the site default"
+          className={inputCls}
+        />
+        <p className="mt-1 text-xs text-kb-charcoal/50">
+          You get an email, and shoppers see &ldquo;Only N left&rdquo;, once stock falls to this number. Leave empty
+          to use the site-wide default set in Settings.
+        </p>
+      </Field>
 
       <Field label="Description">
         <textarea

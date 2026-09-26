@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Product, Category } from "@/lib/types";
-import ProductCard from "@/components/ProductCard";
+import ProductBrowser from "@/components/ProductBrowser";
 import PageHeader from "@/components/PageHeader";
+import { getDefaultLowStockThreshold } from "@/lib/store-settings";
 import FilterChips from "@/components/FilterChips";
 
 // Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
@@ -30,7 +31,7 @@ export default async function FoodMartCategoryPage({
   if (!category) notFound();
   const cat = category as Category;
 
-  const [{ data: products }, { data: categories }] = await Promise.all([
+  const [{ data: products }, { data: categories }, lowStockDefault] = await Promise.all([
     supabase
       .from("products")
       .select("*, category:categories(*)")
@@ -38,6 +39,7 @@ export default async function FoodMartCategoryPage({
       .eq("category_id", cat.id)
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("*").in("type", ["product", "both"]).order("name"),
+    getDefaultLowStockThreshold(),
   ]);
 
   const chips = [
@@ -55,11 +57,7 @@ export default async function FoodMartCategoryPage({
         <FilterChips items={chips} activeHref={`/food-mart/${cat.slug}`} />
 
         {products && products.length > 0 ? (
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-            {(products as Product[]).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <ProductBrowser products={products as Product[]} lowStockDefault={lowStockDefault} />
         ) : (
           <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
             <p className="text-kb-charcoal/60">No products listed in this category yet.</p>

@@ -112,9 +112,12 @@ export default async function TrackOrderResultPage({ params }: { params: Promise
             ))}
           </ul>
           <div className="mt-4 space-y-1 border-t border-kb-forest/10 pt-4 text-sm text-kb-charcoal/70">
-            {(vat > 0 || delivery > 0) && (
+            {(vat > 0 || delivery > 0 || (extras?.discount ?? 0) > 0) && (
               <>
                 <p className="flex justify-between"><span>Subtotal</span><span>{formatNaira(extras?.subtotal ?? 0)}</span></p>
+                {(extras?.discount ?? 0) > 0 && (
+                  <p className="flex justify-between text-kb-green"><span>Discount{extras?.discountCode ? ` (${extras.discountCode})` : ""}</span><span>-{formatNaira(extras!.discount!)}</span></p>
+                )}
                 {vat > 0 && <p className="flex justify-between"><span>VAT ({extras?.vatPercent}%)</span><span>{formatNaira(vat)}</span></p>}
                 {delivery > 0 && <p className="flex justify-between"><span>Delivery</span><span>{formatNaira(delivery)}</span></p>}
               </>

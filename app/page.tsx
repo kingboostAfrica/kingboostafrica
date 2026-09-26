@@ -15,6 +15,7 @@ import { getPageContent, pick } from "@/lib/content";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Product } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
+import { getDefaultLowStockThreshold } from "@/lib/store-settings";
 import { FieldArt, FieldLines } from "@/components/FieldArt";
 import HeroSlider, { type Slide } from "@/components/HeroSlider";
 
@@ -63,7 +64,7 @@ async function loadGallerySlides(): Promise<Slide[]> {
 
 export default async function Home() {
   const supabase = createPublicClient();
-  const [rows, { data: featured }, gallerySlides] = await Promise.all([
+  const [rows, { data: featured }, gallerySlides, lowStockDefault] = await Promise.all([
     getPageContent("home"),
     supabase
       .from("products")
@@ -73,6 +74,7 @@ export default async function Home() {
       .order("created_at", { ascending: false })
       .limit(4),
     loadGallerySlides(),
+    getDefaultLowStockThreshold(),
   ]);
 
   const hero = pick(rows, "hero", "main");
@@ -260,7 +262,7 @@ export default async function Home() {
             </div>
             <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
               {products.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} lowStockDefault={lowStockDefault} />
               ))}
             </div>
           </div>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail, looksLikeBot } from "@/lib/validation";
 import { notifyOwner } from "@/lib/email";
+import { sendBookingReceivedEmail } from "@/lib/order-emails";
 
 export async function POST(request: Request) {
   try {
@@ -61,6 +62,11 @@ export async function POST(request: Request) {
       "/admin/messages",
       "Open requests in admin"
     );
+    try {
+      await sendBookingReceivedEmail({ name: full_name, email, serviceTitle: service?.title ?? "your request" });
+    } catch (err) {
+      console.error("Booking confirmation email error:", err);
+    }
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Consulting booking error:", err);

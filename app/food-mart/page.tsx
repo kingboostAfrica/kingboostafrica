@@ -1,6 +1,9 @@
+import Link from "next/link";
+import { Briefcase } from "lucide-react";
 import { createPublicClient } from "@/lib/supabase/public";
+import { getDefaultLowStockThreshold } from "@/lib/store-settings";
 import type { Product, Category } from "@/lib/types";
-import ProductCard from "@/components/ProductCard";
+import ProductBrowser from "@/components/ProductBrowser";
 import PageHeader from "@/components/PageHeader";
 import FilterChips from "@/components/FilterChips";
 
@@ -15,13 +18,14 @@ export const metadata = {
 export default async function FoodMartPage() {
   const supabase = createPublicClient();
 
-  const [{ data: products }, { data: categories }] = await Promise.all([
+  const [{ data: products }, { data: categories }, lowStockDefault] = await Promise.all([
     supabase
       .from("products")
       .select("*, category:categories(*)")
       .eq("is_active", true)
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("*").in("type", ["product", "both"]).order("name"),
+    getDefaultLowStockThreshold(),
   ]);
 
   const chips = [
@@ -39,14 +43,19 @@ export default async function FoodMartPage() {
         description="Pure, natural, nutritious produce and staples, grown and sourced with care."
       />
       <div className="mx-auto max-w-6xl px-5 py-12">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-kb-mist p-5">
+          <p className="text-sm text-kb-charcoal/70">
+            Buying for a business, event or large household? We can put together a price for a bulk order.
+          </p>
+          <Link href="/request-quote" className="btn btn-outline shrink-0">
+            <Briefcase size={16} aria-hidden="true" /> Request a bulk quote
+          </Link>
+        </div>
+
         {chips.length > 1 && <FilterChips items={chips} activeHref="/food-mart" />}
 
         {products && products.length > 0 ? (
-          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-            {(products as Product[]).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <ProductBrowser products={products as Product[]} lowStockDefault={lowStockDefault} />
         ) : (
           <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
             <p className="text-kb-charcoal/60">No products listed yet. Check back soon.</p>

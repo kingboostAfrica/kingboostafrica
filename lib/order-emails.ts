@@ -23,6 +23,8 @@ export function extrasFromOrder(order: Record<string, unknown>): OrderExtras | u
     vat: Number(order.vat_amount ?? 0),
     vatPercent: Number(order.vat_percent ?? 0),
     delivery: Number(order.delivery_fee ?? 0),
+    discount: Number(order.discount_amount ?? 0),
+    discountCode: (order.discount_code as string | null) ?? null,
   };
 }
 
@@ -294,6 +296,73 @@ export async function sendOrderShippedEmail(db: SupabaseClient, orderId: string)
           ? `your order <strong>#${escapeHtml(ref)}</strong> is ready to collect.`
           : `good news, your order <strong>#${escapeHtml(ref)}</strong> is on its way to you.`
       }</p>${orderTable(lines, total, extrasFromOrder(order))}${where}<p style="font-size:14px;line-height:1.6;margin:12px 0 0;">${payLine}</p><p style="font-size:13px;color:#6b756f;">Questions? Just reply to this email.</p>`
+    ),
+  });
+}
+
+// ─── Confirmation emails for the "small" forms ───
+
+export async function sendQuoteRequestReceivedEmail(input: {
+  contactName: string;
+  email: string;
+  items: { name: string; unit: string; quantity: number }[];
+}) {
+  if (!canEmailCustomers()) return false;
+  const list = input.items
+    .map((i) => `<li>${escapeHtml(String(i.quantity))}${i.unit ? ` ${escapeHtml(i.unit)}` : ""} × ${escapeHtml(i.name)}</li>`)
+    .join("");
+  return sendEmail({
+    to: input.email,
+    replyTo: notifyAddress(),
+    subject: "We received your bulk quote request",
+    html: emailLayout(
+      "We received your request",
+      `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Hello ${escapeHtml(input.contactName.split(" ")[0])}, thank you for your interest. We have received your request for:</p><ul style="font-size:14px;line-height:1.7;padding-left:20px;margin:0 0 12px;">${list}</ul><p style="font-size:14px;line-height:1.6;margin:0;">Our team will get back to you with pricing shortly. Questions in the meantime? Just reply to this email.</p>`
+    ),
+  });
+}
+
+export async function sendEnrollmentReceivedEmail(input: { name: string; email: string; courseTitle: string }) {
+  if (!canEmailCustomers()) return false;
+  return sendEmail({
+    to: input.email,
+    replyTo: notifyAddress(),
+    subject: `We received your enrollment — ${input.courseTitle}`,
+    html: emailLayout(
+      "We received your enrollment",
+      `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Hello ${escapeHtml(input.name.split(" ")[0])}, thank you for signing up for <strong>${escapeHtml(input.courseTitle)}</strong>. Our team will contact you shortly with the next steps.</p><p style="font-size:14px;line-height:1.6;margin:0;">Questions in the meantime? Just reply to this email.</p>`
+    ),
+  });
+}
+
+export async function sendBookingReceivedEmail(input: { name: string; email: string; serviceTitle: string }) {
+  if (!canEmailCustomers()) return false;
+  return sendEmail({
+    to: input.email,
+    replyTo: notifyAddress(),
+    subject: `We received your request — ${input.serviceTitle}`,
+    html: emailLayout(
+      "We received your request",
+      `<p style="font-size:14px;line-height:1.6;margin:0 0 12px;">Hello ${escapeHtml(input.name.split(" ")[0])}, thank you for your interest in <strong>${escapeHtml(input.serviceTitle)}</strong>. Our team will contact you shortly to arrange the details.</p><p style="font-size:14px;line-height:1.6;margin:0;">Questions in the meantime? Just reply to this email.</p>`
+    ),
+  });
+}
+
+// ─── Low stock alert (owner only) ───
+
+export async function alertOwnerLowStock(product: { name: string; unit: string; stock: number }, threshold: number) {
+  if (!process.env.RESEND_API_KEY) return false;
+  return sendEmail({
+    to: notifyAddress(),
+    subject: `Low stock: ${product.name} (${product.stock} ${product.unit} left)`,
+    html: emailLayout(
+      "A product is running low",
+      `${detailRows([
+        ["Product", product.name],
+        ["Remaining stock", `${product.stock} ${product.unit}`],
+        ["Alert threshold", String(threshold)],
+      ])}<p style="font-size:13px;color:#6b756f;">You will not get another alert for this product until its stock rises above the threshold and drops again.</p>`,
+      { label: "Open products in admin", href: adminUrl("/admin/products") }
     ),
   });
 }

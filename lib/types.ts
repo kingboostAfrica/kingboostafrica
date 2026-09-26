@@ -17,6 +17,7 @@ export interface Product {
   price: number;
   unit: string;
   stock: number;
+  low_stock_threshold?: number | null;
   images: string[];
   is_active: boolean;
   created_at: string;
@@ -56,6 +57,8 @@ export interface Order {
   cancel_token?: string;
   fulfilment_method?: "delivery" | "pickup";
   delivery_zone?: string | null;
+  discount_code?: string | null;
+  discount_amount?: number;
   created_at: string;
 }
 
@@ -139,5 +142,42 @@ export interface Inquiry {
   phone: string | null;
   message: string;
   status: "new" | "contacted" | "closed";
+  created_at: string;
+}
+
+export interface QuoteRequest {
+  id: string;
+  company_name: string | null;
+  contact_name: string;
+  email: string;
+  phone: string | null;
+  items: { name: string; unit: string; quantity: number }[];
+  message: string | null;
+  status: "new" | "contacted" | "closed";
+  created_at: string;
+}
+
+export interface DiscountCode {
+  id: string;
+  code: string;
+  kind: "percent" | "fixed";
+  amount: number;
+  min_subtotal: number;
+  max_uses: number | null;
+  used_count: number;
+  starts_at: string | null;
+  expires_at: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface StockLogEntry {
+  id: string;
+  product_id: string | null;
+  product_name: string;
+  previous_stock: number;
+  new_stock: number;
+  change: number;
+  changed_by: string | null;
   created_at: string;
 }

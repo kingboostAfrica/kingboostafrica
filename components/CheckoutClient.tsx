@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import PageHeader from "@/components/PageHeader";
 import { computeTotals, formatNaira } from "@/lib/pricing";
+import { createClient } from "@/lib/supabase/client";
+import { Phone, Tag, X } from "lucide-react";
 
 type Zone = { id: string; name: string; fee: number };
 
@@ -14,24 +16,61 @@ export default function CheckoutClient({
   vatPercent,
   pickup,
   zones,
+  contactPhone,
 }: {
   paystackEnabled: boolean;
   vatPercent: number;
   pickup: { enabled: boolean; address: string; instructions: string };
   zones: Zone[];
+  contactPhone?: string | null;
 }) {
   const { items, total: subtotal, clearCart } = useCart();
   const [fulfilment, setFulfilment] = useState<"delivery" | "pickup">("delivery");
   const [zoneId, setZoneId] = useState("");
   const selectedZone = zones.find((z) => z.id === zoneId);
   const deliveryFee = fulfilment === "pickup" ? 0 : (selectedZone?.fee ?? 0);
-  const totals = computeTotals(subtotal, vatPercent, deliveryFee);
+  const [discountInput, setDiscountInput] = useState("");
+  const [discount, setDiscount] = useState<{ code: string; amount: number } | null>(null);
+  const [discountChecking, setDiscountChecking] = useState(false);
+  const [discountMessage, setDiscountMessage] = useState("");
+  const totals = computeTotals(subtotal, vatPercent, deliveryFee, discount?.amount ?? 0);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"online" | "delivery">(
     paystackEnabled ? "online" : "delivery"
   );
+
+  async function applyDiscount() {
+    const code = discountInput.trim();
+    if (!code) return;
+    setDiscountChecking(true);
+    setDiscountMessage("");
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("preview_discount_code", { p_code: code, p_subtotal: subtotal });
+      if (error) throw error;
+      const result = data as { valid: boolean; message?: string; discount?: number };
+      if (!result.valid) {
+        setDiscount(null);
+        setDiscountMessage(result.message ?? "That code is not valid.");
+      } else {
+        setDiscount({ code, amount: Number(result.discount ?? 0) });
+        setDiscountMessage("");
+      }
+    } catch {
+      setDiscount(null);
+      setDiscountMessage("Could not check that code right now. It will still be checked when you place your order.");
+    } finally {
+      setDiscountChecking(false);
+    }
+  }
+
+  function removeDiscount() {
+    setDiscount(null);
+    setDiscountInput("");
+    setDiscountMessage("");
+  }
 
   const [form, setForm] = useState({
     buyerName: "",
@@ -66,6 +105,7 @@ export default function CheckoutClient({
           paymentMethod,
           fulfilmentMethod: fulfilment,
           zoneId: fulfilment === "delivery" ? zoneId : "",
+          discountCode: discount?.code || undefined,
           items: items.map((i) => ({ product: { id: i.product.id }, quantity: i.quantity })),
         }),
       });
@@ -213,6 +253,45 @@ export default function CheckoutClient({
             </>
           )}
   
+          <div className="pt-2">
+            <label className="mb-1 block text-sm font-medium text-kb-charcoal">
+              Discount code (optional)
+            </label>
+            {discount ? (
+              <div className="flex items-center justify-between rounded-lg border border-kb-green bg-kb-mist px-4 py-2.5">
+                <span className="flex items-center gap-2 text-sm font-semibold text-kb-green">
+                  <Tag size={15} aria-hidden="true" /> {discount.code.toUpperCase()} applied
+                </span>
+                <button
+                  type="button"
+                  onClick={removeDiscount}
+                  aria-label="Remove discount code"
+                  className="text-kb-charcoal/50 hover:text-red-600"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  value={discountInput}
+                  onChange={(e) => setDiscountInput(e.target.value)}
+                  placeholder="e.g. WELCOME10"
+                  className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white uppercase placeholder:normal-case"
+                />
+                <button
+                  type="button"
+                  onClick={applyDiscount}
+                  disabled={discountChecking || !discountInput.trim()}
+                  className="btn btn-outline shrink-0 !px-5 disabled:opacity-60"
+                >
+                  {discountChecking ? "Checking..." : "Apply"}
+                </button>
+              </div>
+            )}
+            {discountMessage && <p className="mt-1.5 text-sm text-red-600">{discountMessage}</p>}
+          </div>
+
           {paystackEnabled && (
             <fieldset className="space-y-3 pt-2">
               <legend className="mb-1 block text-sm font-medium text-kb-charcoal">
@@ -308,6 +387,12 @@ export default function CheckoutClient({
               <span>Subtotal</span>
               <span>{formatNaira(totals.subtotal)}</span>
             </p>
+            {totals.discount > 0 && (
+              <p className="flex justify-between font-semibold text-kb-green">
+                <span>Discount ({discount?.code.toUpperCase()})</span>
+                <span>−{formatNaira(totals.discount)}</span>
+              </p>
+            )}
             {vatPercent > 0 && (
               <p className="flex justify-between text-kb-charcoal/70">
                 <span>VAT ({vatPercent}%)</span>
@@ -338,6 +423,14 @@ export default function CheckoutClient({
           <p className="mt-2 text-xs text-kb-charcoal/60">
             Final prices are confirmed when you place the order.
           </p>
+          {contactPhone && (
+            <a
+              href={`tel:${contactPhone}`}
+              className="mt-5 flex items-center gap-2 border-t border-kb-forest/10 pt-4 text-sm font-semibold text-kb-green hover:underline"
+            >
+              <Phone size={15} aria-hidden="true" /> Need help? Call {contactPhone}
+            </a>
+          )}
         </aside>
       </div>
     </>
