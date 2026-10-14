@@ -84,7 +84,7 @@ export default async function AdminMessagesPage() {
                     {e.full_name} <span className="text-kb-charcoal/40 font-normal">— {e.course?.title}</span>
                   </p>
                   <p className="text-sm text-kb-charcoal/60">
-                    <a href={`mailto:${e.email}`} className="hover:text-kb-green">{e.email}</a> {e.phone ? `· ${e.phone}` : ""}
+                    <a href={`mailto:${e.email}`} className="hover:text-kb-green">{e.email}</a> {e.phone ? `· ${e.phone}` : ""} {e.country ? `· ${e.country}` : ""}
                   </p>
                   <p className="text-xs text-kb-charcoal/40 mt-1">{new Date(e.created_at).toLocaleString()}</p>
                 </div>
@@ -110,7 +110,7 @@ export default async function AdminMessagesPage() {
                     {b.full_name} <span className="text-kb-charcoal/40 font-normal">— {b.service?.title}</span>
                   </p>
                   <p className="text-sm text-kb-charcoal/60">
-                    <a href={`mailto:${b.email}`} className="hover:text-kb-green">{b.email}</a> {b.phone ? `· ${b.phone}` : ""}
+                    <a href={`mailto:${b.email}`} className="hover:text-kb-green">{b.email}</a> {b.phone ? `· ${b.phone}` : ""} {b.country ? `· ${b.country}` : ""}
                     {b.company ? ` · ${b.company}` : ""}
                   </p>
                   {b.preferred_date && (

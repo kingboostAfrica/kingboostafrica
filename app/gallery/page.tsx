@@ -1,8 +1,8 @@
-import Image from "next/image";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { GalleryItem, Category } from "@/lib/types";
 import PageHeader from "@/components/PageHeader";
 import FilterChips from "@/components/FilterChips";
+import GalleryGrid from "@/components/GalleryGrid";
 
 // Served from a saved copy and rebuilt at most every 120 seconds (and instantly after admin edits).
 export const revalidate = 120;
@@ -18,7 +18,7 @@ export default async function GalleryPage() {
   const [{ data: items }, { data: categories }] = await Promise.all([
     supabase
       .from("gallery_items")
-      .select("*, category:categories(*)")
+      .select("*, category:categories(*), product:products(id, name, slug, price, unit)")
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("*").in("type", ["gallery", "both"]).order("name"),
   ]);
@@ -41,22 +41,7 @@ export default async function GalleryPage() {
         {chips.length > 1 && <FilterChips items={chips} activeHref="/gallery" />}
 
         {items && items.length > 0 ? (
-          <div className="columns-2 gap-4 space-y-4 sm:columns-3">
-            {(items as GalleryItem[]).map((item) => (
-              <figure key={item.id} className="break-inside-avoid overflow-hidden rounded-xl bg-kb-mist">
-                <Image
-                  src={item.image_url}
-                  alt={item.caption || "KingBoostFarms photo"}
-                  width={500}
-                  height={500}
-                  className="h-auto w-full object-cover"
-                />
-                {item.caption && (
-                  <figcaption className="p-3 text-sm text-kb-charcoal/70">{item.caption}</figcaption>
-                )}
-              </figure>
-            ))}
-          </div>
+          <GalleryGrid items={items as GalleryItem[]} />
         ) : (
           <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
             <p className="text-kb-charcoal/60">No photos shared yet.</p>

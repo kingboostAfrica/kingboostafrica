@@ -119,7 +119,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
             </button>
           </div>
 
-          <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2" role="tablist" aria-label="Choose a photo">
+          <div className="absolute inset-x-3 bottom-3 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Choose a photo">
             {slides.map((s, i) => (
               <button
                 key={s.src}

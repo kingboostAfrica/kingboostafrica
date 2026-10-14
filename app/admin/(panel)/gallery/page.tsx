@@ -4,26 +4,30 @@ import type { Category, GalleryItem } from "@/lib/types";
 import GalleryUploader from "@/components/admin/GalleryUploader";
 import DeleteButton from "@/components/admin/DeleteButton";
 import FeaturedToggle from "@/components/admin/FeaturedToggle";
+import GalleryProductLink from "@/components/admin/GalleryProductLink";
 
 export default async function AdminGalleryPage() {
   const { supabase } = await requireAdmin();
 
-  const [{ data: items }, { data: categories }] = await Promise.all([
+  const [{ data: items }, { data: categories }, { data: products }] = await Promise.all([
     supabase.from("gallery_items").select("*").order("created_at", { ascending: false }),
     supabase.from("categories").select("*").in("type", ["gallery", "both"]).order("name"),
+    supabase.from("products").select("id, name").eq("is_active", true).order("name"),
   ]);
 
   const list = (items as GalleryItem[] | null) ?? [];
   const cats = (categories as Category[] | null) ?? [];
   const catName = new Map(cats.map((c) => [c.id, c.name]));
+  const productList = (products as { id: string; name: string }[] | null) ?? [];
 
   return (
     <div className="max-w-4xl mx-auto px-5 py-12">
       <h1 className="font-display text-3xl font-bold text-kb-charcoal mt-2 mb-2">Gallery</h1>
       <p className="text-kb-charcoal/60 mb-8">
-        Photos here appear on the Gallery page. Tick <strong>Show in homepage slider</strong> on up to five of them to
-        put them in the moving photo slider on the homepage, after your main hero photo. If you tick none, the latest
-        photos are used.
+        Photos here appear on the Gallery page, and every one of them also plays in the homepage slider after your
+        main hero photo (featured ones first, then the rest, newest first). Tick <strong>Show in homepage slider</strong>{" "}
+        to feature a photo, and link a photo to a product so hovering it on the Gallery page shows that product and
+        links straight to it.
       </p>
 
       <GalleryUploader categories={cats} />
@@ -59,8 +63,9 @@ export default async function AdminGalleryPage() {
                 </div>
                 <DeleteButton table="gallery_items" id={item.id} confirmText="Remove this photo from the gallery?" />
               </div>
-              <div className="px-3 pb-3">
+              <div className="space-y-2 px-3 pb-3">
                 <FeaturedToggle id={item.id} featured={Boolean(item.featured)} />
+                <GalleryProductLink galleryItemId={item.id} productId={item.product_id ?? null} products={productList} />
               </div>
             </div>
           ))}

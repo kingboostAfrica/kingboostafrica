@@ -1,13 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/types";
+import { usdEstimate } from "@/lib/currency";
 
 export default function ProductCard({
   product,
   lowStockDefault = null,
+  usdRate = null,
 }: {
   product: Product;
   lowStockDefault?: number | null;
+  usdRate?: number | null;
 }) {
   const image = product.images?.[0];
   const soldOut = product.stock <= 0;
@@ -50,6 +53,9 @@ export default function ProductCard({
           ₦{product.price.toLocaleString()}
           <span className="text-sm font-normal text-kb-charcoal/60"> / {product.unit}</span>
         </p>
+        {usdEstimate(product.price, usdRate) && (
+          <p className="text-xs text-kb-charcoal/50">{usdEstimate(product.price, usdRate)}</p>
+        )}
       </div>
     </Link>
   );

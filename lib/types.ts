@@ -32,6 +32,9 @@ export interface GalleryItem {
   image_url: string;
   caption: string | null;
   featured?: boolean;
+  product_id?: string | null;
+  product?: { id: string; name: string; slug: string; price: number; unit: string } | null;
+  category?: Category | null;
   created_at: string;
 }
 
@@ -98,6 +101,7 @@ export interface Enrollment {
   full_name: string;
   email: string;
   phone: string | null;
+  country: string | null;
   status: "pending" | "confirmed" | "cancelled";
   created_at: string;
   course?: Course;
@@ -124,6 +128,7 @@ export interface ConsultingBooking {
   email: string;
   phone: string | null;
   company: string | null;
+  country: string | null;
   preferred_date: string | null;
   message: string | null;
   status: "pending" | "confirmed" | "cancelled";

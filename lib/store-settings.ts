@@ -105,3 +105,18 @@ export async function getDefaultLowStockThreshold(): Promise<number | null> {
     return null;
   }
 }
+
+// The Naira-per-Dollar rate set in Admin > Settings, used only for the "approx. $" hints. null = not set.
+export async function getUsdRate(): Promise<number | null> {
+  try {
+    const { data } = await createPublicClient()
+      .from("store_settings")
+      .select("usd_exchange_rate")
+      .eq("id", 1)
+      .maybeSingle();
+    const n = Number(data?.usd_exchange_rate);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch {
+    return null;
+  }
+}

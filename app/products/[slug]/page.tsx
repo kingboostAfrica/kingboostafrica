@@ -6,7 +6,8 @@ import type { Product } from "@/lib/types";
 import AddToCartButton from "@/components/AddToCartButton";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { getWhatsappNumber } from "@/lib/store-settings";
+import { getWhatsappNumber, getUsdRate } from "@/lib/store-settings";
+import { usdEstimate } from "@/lib/currency";
 import { whatsappLink } from "@/lib/whatsapp";
 import { SITE_URL } from "@/lib/site";
 
@@ -61,7 +62,7 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const p = product as Product;
-  const whatsapp = await getWhatsappNumber();
+  const [whatsapp, usdRate] = await Promise.all([getWhatsappNumber(), getUsdRate()]);
 
   return (
     <>
@@ -93,6 +94,11 @@ export default async function ProductPage({
           ₦{p.price.toLocaleString()}
           <span className="text-kb-charcoal/50 font-normal text-base"> / {p.unit}</span>
         </p>
+        {usdEstimate(p.price, usdRate) && (
+          <p className="text-sm text-kb-charcoal/50">
+            {usdEstimate(p.price, usdRate)} — charged in Naira; your bank sets the exact rate.
+          </p>
+        )}
 
         {p.description && (
           <p className="text-kb-charcoal/70 mt-6 leading-relaxed">{p.description}</p>

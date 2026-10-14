@@ -17,6 +17,7 @@ export default function StoreSettingsForm({
   businessRc,
   businessTin,
   lowStockThreshold,
+  usdExchangeRate,
 }: {
   vatPercent: number;
   pickupEnabled: boolean;
@@ -27,6 +28,7 @@ export default function StoreSettingsForm({
   businessRc: string;
   businessTin: string;
   lowStockThreshold: string;
+  usdExchangeRate: string;
 }) {
   const supabase = createClient();
   const [vat, setVat] = useState(String(vatPercent));
@@ -38,6 +40,7 @@ export default function StoreSettingsForm({
   const [rc, setRc] = useState(businessRc);
   const [tin, setTin] = useState(businessTin);
   const [lowStock, setLowStock] = useState(lowStockThreshold);
+  const [usdRate, setUsdRate] = useState(usdExchangeRate);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -68,6 +71,7 @@ export default function StoreSettingsForm({
       business_rc: rc.trim() || null,
       business_tin: tin.trim() || null,
       low_stock_threshold: lowStock.trim() ? parseInt(lowStock, 10) : null,
+      usd_exchange_rate: usdRate.trim() ? parseFloat(usdRate) : null,
       id: 1,
       vat_percent: vatNum,
       pickup_enabled: pickupOn,
@@ -185,6 +189,28 @@ export default function StoreSettingsForm({
           </Field>
           <Field label="TIN">
             <input value={tin} onChange={(e) => setTin(e.target.value)} placeholder="12345678-0001" className={inputCls} />
+          </Field>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-display text-xl font-bold text-kb-forest mb-1">International customers</h2>
+        <p className="text-sm text-kb-charcoal/60 mb-4">
+          Customers are always charged in Naira through Paystack — a foreign card is simply converted by the
+          customer&apos;s own bank. Setting a rate here only shows shoppers an approximate dollar price next to Naira
+          prices, so it&apos;s worth updating every so often as the rate moves. Leave empty to hide it.
+        </p>
+        <div className="max-w-xs">
+          <Field label="₦ per US$1">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={usdRate}
+              onChange={(e) => setUsdRate(e.target.value)}
+              placeholder="e.g. 1600"
+              className={inputCls}
+            />
           </Field>
         </div>
       </section>

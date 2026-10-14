@@ -3,7 +3,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import type { Product, Category } from "@/lib/types";
 import ProductBrowser from "@/components/ProductBrowser";
 import PageHeader from "@/components/PageHeader";
-import { getDefaultLowStockThreshold } from "@/lib/store-settings";
+import { getDefaultLowStockThreshold, getUsdRate } from "@/lib/store-settings";
 import FilterChips from "@/components/FilterChips";
 
 // Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
@@ -31,7 +31,7 @@ export default async function FoodMartCategoryPage({
   if (!category) notFound();
   const cat = category as Category;
 
-  const [{ data: products }, { data: categories }, lowStockDefault] = await Promise.all([
+  const [{ data: products }, { data: categories }, lowStockDefault, usdRate] = await Promise.all([
     supabase
       .from("products")
       .select("*, category:categories(*)")
@@ -40,6 +40,7 @@ export default async function FoodMartCategoryPage({
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("*").in("type", ["product", "both"]).order("name"),
     getDefaultLowStockThreshold(),
+    getUsdRate(),
   ]);
 
   const chips = [
@@ -57,7 +58,7 @@ export default async function FoodMartCategoryPage({
         <FilterChips items={chips} activeHref={`/food-mart/${cat.slug}`} />
 
         {products && products.length > 0 ? (
-          <ProductBrowser products={products as Product[]} lowStockDefault={lowStockDefault} />
+          <ProductBrowser products={products as Product[]} lowStockDefault={lowStockDefault} usdRate={usdRate} />
         ) : (
           <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
             <p className="text-kb-charcoal/60">No products listed in this category yet.</p>

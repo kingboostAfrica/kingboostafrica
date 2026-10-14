@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Briefcase } from "lucide-react";
 import { createPublicClient } from "@/lib/supabase/public";
-import { getDefaultLowStockThreshold } from "@/lib/store-settings";
+import { getDefaultLowStockThreshold, getUsdRate } from "@/lib/store-settings";
 import type { Product, Category } from "@/lib/types";
 import ProductBrowser from "@/components/ProductBrowser";
 import PageHeader from "@/components/PageHeader";
@@ -18,7 +18,7 @@ export const metadata = {
 export default async function FoodMartPage() {
   const supabase = createPublicClient();
 
-  const [{ data: products }, { data: categories }, lowStockDefault] = await Promise.all([
+  const [{ data: products }, { data: categories }, lowStockDefault, usdRate] = await Promise.all([
     supabase
       .from("products")
       .select("*, category:categories(*)")
@@ -26,6 +26,7 @@ export default async function FoodMartPage() {
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("*").in("type", ["product", "both"]).order("name"),
     getDefaultLowStockThreshold(),
+    getUsdRate(),
   ]);
 
   const chips = [
@@ -55,7 +56,7 @@ export default async function FoodMartPage() {
         {chips.length > 1 && <FilterChips items={chips} activeHref="/food-mart" />}
 
         {products && products.length > 0 ? (
-          <ProductBrowser products={products as Product[]} lowStockDefault={lowStockDefault} />
+          <ProductBrowser products={products as Product[]} lowStockDefault={lowStockDefault} usdRate={usdRate} />
         ) : (
           <div className="rounded-xl border border-dashed border-kb-forest/25 py-24 text-center">
             <p className="text-kb-charcoal/60">No products listed yet. Check back soon.</p>

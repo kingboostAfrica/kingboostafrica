@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { COUNTRIES } from "@/lib/countries";
 
 export default function BookingForm({ serviceId }: { serviceId: string }) {
   const [submitting, setSubmitting] = useState(false);
@@ -15,6 +16,7 @@ export default function BookingForm({ serviceId }: { serviceId: string }) {
     company: "",
     preferredDate: "",
     message: "",
+    country: "Nigeria",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -34,6 +36,7 @@ export default function BookingForm({ serviceId }: { serviceId: string }) {
           company: form.company,
           preferred_date: form.preferredDate || null,
           message: form.message,
+          country: form.country,
         }),
       });
       if (!res.ok) throw new Error("Booking failed. Please try again.");
@@ -113,6 +116,18 @@ export default function BookingForm({ serviceId }: { serviceId: string }) {
             className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
           />
         </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-kb-charcoal mb-1">Which country are you in?</label>
+        <select
+          value={form.country}
+          onChange={(e) => setForm({ ...form, country: e.target.value })}
+          className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
+        >
+          {COUNTRIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-kb-charcoal mb-1">What do you need help with?</label>

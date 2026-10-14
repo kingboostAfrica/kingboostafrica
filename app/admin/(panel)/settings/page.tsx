@@ -7,7 +7,7 @@ export default async function AdminSettingsPage() {
   const [{ data: settings }, { data: zones }] = await Promise.all([
     supabase
       .from("store_settings")
-      .select("vat_percent, pickup_enabled, pickup_address, pickup_instructions, whatsapp_number, business_phone, business_rc, business_tin, low_stock_threshold")
+      .select("vat_percent, pickup_enabled, pickup_address, pickup_instructions, whatsapp_number, business_phone, business_rc, business_tin, low_stock_threshold, usd_exchange_rate")
       .eq("id", 1)
       .maybeSingle(),
     supabase.from("delivery_zones").select("id, name, fee, is_active").order("name"),
@@ -32,6 +32,7 @@ export default async function AdminSettingsPage() {
           businessRc={settings?.business_rc ?? ""}
           businessTin={settings?.business_tin ?? ""}
           lowStockThreshold={settings?.low_stock_threshold != null ? String(settings.low_stock_threshold) : ""}
+          usdExchangeRate={settings?.usd_exchange_rate != null ? String(settings.usd_exchange_rate) : ""}
         />
         <DeliveryZonesManager
           zones={((zones as { id: string; name: string; fee: number; is_active: boolean }[] | null) ?? []).map(

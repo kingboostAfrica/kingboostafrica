@@ -19,9 +19,11 @@ const SORTS: { key: SortKey; label: string }[] = [
 export default function ProductBrowser({
   products,
   lowStockDefault,
+  usdRate = null,
 }: {
   products: Product[];
   lowStockDefault: number | null;
+  usdRate?: number | null;
 }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
@@ -105,7 +107,7 @@ export default function ProductBrowser({
       ) : (
         <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
           {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} lowStockDefault={lowStockDefault} />
+            <ProductCard key={product.id} product={product} lowStockDefault={lowStockDefault} usdRate={usdRate} />
           ))}
         </div>
       )}

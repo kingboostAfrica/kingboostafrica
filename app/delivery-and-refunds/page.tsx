@@ -65,6 +65,25 @@ const sections: PolicySection[] = [
     ),
   },
   {
+    id: "international",
+    title: "Ordering from outside Nigeria",
+    body: (
+      <>
+        <P>
+          Many of our customers order from abroad to send fresh produce and staples to family or friends in Nigeria —
+          for example for a delivery address in Lagos, or for someone else to collect at pickup. All deliveries and
+          self pickup still take place within Nigeria; we are not able to ship products internationally.
+        </P>
+        <P>
+          You can pay with an international card. Paystack, our payment provider, charges the order in Nigerian
+          Naira (₦), and your card issuer converts this to your own currency at their exchange rate on the day. Where
+          we show an approximate price in US dollars on the site, it is only a guide — the amount your bank actually
+          charges you may differ slightly.
+        </P>
+      </>
+    ),
+  },
+  {
     id: "timing",
     title: "Delivery times",
     body: (

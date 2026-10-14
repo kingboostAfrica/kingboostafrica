@@ -15,7 +15,7 @@ import { getPageContent, pick } from "@/lib/content";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Product } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
-import { getDefaultLowStockThreshold } from "@/lib/store-settings";
+import { getDefaultLowStockThreshold, getUsdRate } from "@/lib/store-settings";
 import { FieldArt, FieldLines } from "@/components/FieldArt";
 import HeroSlider, { type Slide } from "@/components/HeroSlider";
 
@@ -38,6 +38,10 @@ const trustDefaults = [
 
 const trustIconMap = { ShieldCheck, Sprout, Leaf };
 
+// Up to this many photos play in the homepage slider (plus the main hero photo). Raise it if you
+// want more of the gallery to show, but a very long slider gets slow and tedious to click through.
+const MAX_GALLERY_SLIDES = 20;
+
 async function loadGallerySlides(): Promise<Slide[]> {
   const db = createPublicClient();
   const toSlide = (r: { image_url: string; caption: string | null }): Slide => ({
@@ -45,26 +49,29 @@ async function loadGallerySlides(): Promise<Slide[]> {
     alt: r.caption || "KingBoostFarms photo",
     caption: r.caption,
   });
-  // Photos ticked "Show in homepage slider"; if none are ticked (or the column is not there yet),
-  // fall back to the latest gallery photos so the slider is never empty.
-  const marked = await db
-    .from("gallery_items")
-    .select("image_url, caption")
-    .eq("featured", true)
-    .order("created_at", { ascending: false })
-    .limit(5);
-  if (!marked.error && marked.data && marked.data.length > 0) return marked.data.map(toSlide);
-  const latest = await db
-    .from("gallery_items")
-    .select("image_url, caption")
-    .order("created_at", { ascending: false })
-    .limit(4);
-  return (latest.data ?? []).map(toSlide);
+  // Every gallery photo goes in, with photos ticked "Show in homepage slider" first, then the rest
+  // by newest first — so the slider isn't limited to only the ones you happened to feature.
+  const [featured, rest] = await Promise.all([
+    db
+      .from("gallery_items")
+      .select("image_url, caption")
+      .eq("featured", true)
+      .order("created_at", { ascending: false })
+      .limit(MAX_GALLERY_SLIDES),
+    db
+      .from("gallery_items")
+      .select("image_url, caption")
+      .eq("featured", false)
+      .order("created_at", { ascending: false })
+      .limit(MAX_GALLERY_SLIDES),
+  ]);
+  const combined = [...(featured.data ?? []), ...(rest.data ?? [])].slice(0, MAX_GALLERY_SLIDES);
+  return combined.map(toSlide);
 }
 
 export default async function Home() {
   const supabase = createPublicClient();
-  const [rows, { data: featured }, gallerySlides, lowStockDefault] = await Promise.all([
+  const [rows, { data: featured }, gallerySlides, lowStockDefault, usdRate] = await Promise.all([
     getPageContent("home"),
     supabase
       .from("products")
@@ -75,6 +82,7 @@ export default async function Home() {
       .limit(4),
     loadGallerySlides(),
     getDefaultLowStockThreshold(),
+    getUsdRate(),
   ]);
 
   const hero = pick(rows, "hero", "main");
@@ -87,7 +95,7 @@ export default async function Home() {
     ...gallerySlides,
   ]
     .filter((sl, i, all) => all.findIndex((o) => o.src === sl.src) === i)
-    .slice(0, 6);
+    .slice(0, MAX_GALLERY_SLIDES + 1); // +1 for the hero photo
 
   const [foodMart, ...others] = verticalDefaults;
   const vertical = (v: (typeof verticalDefaults)[number]) => {
@@ -262,7 +270,7 @@ export default async function Home() {
             </div>
             <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
               {products.map((p) => (
-                <ProductCard key={p.id} product={p} lowStockDefault={lowStockDefault} />
+                <ProductCard key={p.id} product={p} lowStockDefault={lowStockDefault} usdRate={usdRate} />
               ))}
             </div>
           </div>

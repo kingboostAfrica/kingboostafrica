@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     const full_name = clean(body.full_name, 200);
     const email = clean(body.email, 320);
     const phone = clean(body.phone, 40);
+    const country = clean(body.country, 100);
 
     if (!course_id || !full_name || !isEmail(email)) {
       return NextResponse.json(
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
       full_name,
       email,
       phone: phone || null,
+      country: country || null,
       status: "pending",
     });
 
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
     await notifyOwner(
       `New course enrollment: ${course?.title ?? "Academy"} (${full_name})`,
       "New course enrollment",
-      [["Course", course?.title], ["Name", full_name], ["Email", email], ["Phone", phone]],
+      [["Course", course?.title], ["Name", full_name], ["Email", email], ["Phone", phone], ["Country", country]],
       email,
       "/admin/messages",
       "Open sign-ups in admin"

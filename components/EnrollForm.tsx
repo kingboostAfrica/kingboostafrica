@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { COUNTRIES } from "@/lib/countries";
 
 export default function EnrollForm({ courseId }: { courseId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
-  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", country: "Nigeria" });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,6 +25,7 @@ export default function EnrollForm({ courseId }: { courseId: string }) {
           full_name: form.name,
           email: form.email,
           phone: form.phone,
+          country: form.country,
         }),
       });
       if (!res.ok) throw new Error("Enrollment failed. Please try again.");
@@ -82,6 +84,18 @@ export default function EnrollForm({ courseId }: { courseId: string }) {
           onChange={(e) => setForm({ ...form, phone: e.target.value })}
           className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-kb-charcoal mb-1">Which country are you applying from?</label>
+        <select
+          value={form.country}
+          onChange={(e) => setForm({ ...form, country: e.target.value })}
+          className="w-full border border-kb-forest/25 rounded-lg px-4 py-2.5 bg-white"
+        >
+          {COUNTRIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button

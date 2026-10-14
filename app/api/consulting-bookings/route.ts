@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     const company = clean(body.company, 200);
     const preferred_date = clean(body.preferred_date, 10);
     const message = clean(body.message, 5000);
+    const country = clean(body.country, 100);
 
     if (!service_id || !full_name || !isEmail(email) || !message) {
       return NextResponse.json(
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
       company: company || null,
       preferred_date: preferred_date || null,
       message,
+      country: country || null,
       status: "pending",
     });
 
@@ -55,6 +57,7 @@ export async function POST(request: Request) {
         ["Company", company],
         ["Email", email],
         ["Phone", phone],
+        ["Country", country],
         ["Preferred date", preferred_date],
         ["Message", message],
       ],
