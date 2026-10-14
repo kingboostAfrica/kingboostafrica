@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { useWishlist } from "@/lib/wishlist-context";
 import SocialIcons from "@/components/SocialIcons";
 import type { SocialLink } from "@/lib/social";
 
@@ -38,6 +39,7 @@ const secondary = [
 export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[]; whatsapp?: string | null }) {
   const [open, setOpen] = useState(false);
   const { count } = useCart();
+  const { loggedIn } = useWishlist();
   const pathname = usePathname();
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -64,6 +66,25 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
             </a>
           </div>
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:border-r sm:border-white/20 sm:pr-4">
+              {loggedIn ? (
+                <Link href="/account" className="font-semibold text-white hover:text-kb-gold">
+                  My account
+                </Link>
+              ) : (
+                <>
+                  <Link href="/account/login" className="font-semibold text-white hover:text-kb-gold">
+                    Log in
+                  </Link>
+                  <Link
+                    href="/account/signup"
+                    className="rounded-full bg-kb-gold px-3 py-0.5 font-semibold text-kb-forest hover:bg-white"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </div>
             <p className="hidden font-display italic text-white/70 lg:block">
               Cultivating Growth, Nourishing Nations
             </p>
@@ -77,7 +98,7 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
       </div>
 
       <header className="sticky top-0 z-50 border-b border-kb-forest/10 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-6 px-5">
+        <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-4 px-5">
           <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="KingBoostFarms home" onClick={close}>
             <Image
               src="/kingboost-icon.png"
@@ -103,13 +124,13 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
                 key={l.href}
                 href={l.href}
                 aria-current={isActive(l.href) ? "page" : undefined}
-                className={`relative px-3 py-2 text-[0.9375rem] font-semibold transition-colors ${
+                className={`relative whitespace-nowrap px-2 py-2 text-[0.9375rem] font-semibold transition-colors 2xl:px-3 ${
                   isActive(l.href) ? "text-kb-green" : "text-kb-charcoal hover:text-kb-green"
                 }`}
               >
                 {l.label}
                 {isActive(l.href) && (
-                  <span className="absolute inset-x-3 -bottom-[1.05rem] h-[3px] rounded-full bg-kb-gold" />
+                  <span className="absolute inset-x-2 -bottom-[1.05rem] h-[3px] rounded-full bg-kb-gold" />
                 )}
               </Link>
             ))}
@@ -135,7 +156,7 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
             >
               <User size={22} />
             </Link>
-            <Link href="/contact" className="btn btn-primary hidden !px-5 !py-2.5 xl:inline-flex">
+            <Link href="/contact" className="btn btn-primary hidden whitespace-nowrap !px-4 !py-2.5 xl:inline-flex">
               Contact us
             </Link>
             <button
@@ -185,9 +206,20 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
                     {l.label}
                   </Link>
                 ))}
-                <Link href="/account" onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
-                  My account
-                </Link>
+                {loggedIn ? (
+                  <Link href="/account" onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
+                    My account
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/account/login" onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
+                      Log in
+                    </Link>
+                    <Link href="/account/signup" onClick={close} className="py-2 font-semibold text-kb-green hover:underline">
+                      Sign up
+                    </Link>
+                  </>
+                )}
                 <Link href="/cart" onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
                   Cart{count > 0 ? ` (${count})` : ""}
                 </Link>
