@@ -17,6 +17,7 @@ import {
   Ticket,
   ClipboardList,
   UploadCloud,
+  MessageSquareText,
 } from "lucide-react";
 
 type Tool = {
@@ -49,6 +50,7 @@ export default async function AdminDashboardPage() {
     { count: pendingBookings },
     { count: socialCount },
     { count: newQuotes },
+    { count: pendingReviews },
   ] = await Promise.all([
     count("orders", { column: "status", value: "pending" }),
     // paid orders where the customer has asked to cancel (needs your decision)
@@ -67,6 +69,7 @@ export default async function AdminDashboardPage() {
     count("consulting_bookings", { column: "status", value: "pending" }),
     count("social_links"),
     count("quote_requests", { column: "status", value: "new" }),
+    count("reviews", { column: "status", value: "pending" }),
   ]);
 
   const messages = (newInquiries ?? 0) + (pendingEnrollments ?? 0) + (pendingBookings ?? 0) + (newQuotes ?? 0);
@@ -108,6 +111,14 @@ export default async function AdminDashboardPage() {
           icon: Ticket,
           label: "Discount codes",
           desc: "Create and manage percentage or fixed-amount discount codes.",
+        },
+        {
+          href: "/admin/reviews",
+          icon: MessageSquareText,
+          label: "Product reviews",
+          desc: "Approve or reject reviews from customers who bought a product.",
+          badge: `${pendingReviews ?? 0} waiting`,
+          attention: (pendingReviews ?? 0) > 0,
         },
         {
           href: "/admin/stock-log",
@@ -199,6 +210,8 @@ export default async function AdminDashboardPage() {
     });
   if ((pendingOrders ?? 0) > 0)
     alerts.push({ href: "/admin/orders", text: `${pendingOrders} order${pendingOrders === 1 ? " is" : "s are"} waiting to be processed.` });
+  if ((pendingReviews ?? 0) > 0)
+    alerts.push({ href: "/admin/reviews", text: `${pendingReviews} product review${pendingReviews === 1 ? " is" : "s are"} waiting for approval.` });
   if (messages > 0)
     alerts.push({ href: "/admin/messages", text: `${messages} message${messages === 1 ? "" : "s"} or sign-up${messages === 1 ? "" : "s"} need a reply.` });
 

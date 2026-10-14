@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail } from "@/lib/validation";
 import {
@@ -30,6 +31,7 @@ import { alertOwnerLowStock } from "@/lib/order-emails";
 // Payment gateway (Paystack/Flutterwave) hooks in here later: create the
 // order as "pending", start the payment, then mark it "paid" from a webhook.
 export async function POST(request: Request) {
+  if (!(await rateLimit(request, "checkout", 20, 600))) return tooManyRequests();
   try {
     const body = await request.json();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
@@ -78,6 +78,33 @@ export default function CheckoutClient({
     buyerPhone: "",
     deliveryAddress: "",
   });
+
+  // Logged-in customers get their saved details filled in (only into boxes they haven't typed in yet).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
+      if (!user || cancelled) return;
+      const { data: profile } = await supabase
+        .from("customer_profiles")
+        .select("full_name, phone, address")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const metaName = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "";
+      setForm((f) => ({
+        buyerName: f.buyerName || profile?.full_name || metaName || "",
+        buyerEmail: f.buyerEmail || user.email || "",
+        buyerPhone: f.buyerPhone || profile?.phone || "",
+        deliveryAddress: f.deliveryAddress || profile?.address || "",
+      }));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (items.length === 0) {
     return (

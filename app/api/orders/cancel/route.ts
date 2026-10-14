@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { cancelOrderByToken, isToken } from "@/lib/order-cancel";
 
 export async function POST(request: Request) {
+  if (!(await rateLimit(request, "cancel", 30, 600))) return tooManyRequests();
   const body = await request.json().catch(() => null);
   const token = body?.token;
   if (!isToken(token)) {

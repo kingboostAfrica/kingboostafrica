@@ -7,6 +7,7 @@ import HideOnAdmin from "@/components/HideOnAdmin";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { getSocialLinks, getWhatsappNumber } from "@/lib/store-settings";
 import { CartProvider } from "@/lib/cart-context";
+import { WishlistProvider } from "@/lib/wishlist-context";
 import { SITE_URL } from "@/lib/site";
 
 // Lora matches the serif wordmark in the KingBoost logo.
@@ -44,12 +45,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-white text-kb-charcoal">
         <CartProvider>
+          <WishlistProvider>
           <Navbar social={social} whatsapp={whatsapp} />
           <main className="flex-1">{children}</main>
           <HideOnAdmin>
             <Footer whatsapp={whatsapp} social={social} />
             {whatsapp && <WhatsAppButton number={whatsapp} />}
           </HideOnAdmin>
+          </WishlistProvider>
         </CartProvider>
       </body>
     </html>

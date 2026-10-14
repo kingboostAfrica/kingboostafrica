@@ -16,6 +16,7 @@ import {
   Cpu,
   Leaf,
   ArrowRight,
+  User,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import SocialIcons from "@/components/SocialIcons";
@@ -127,6 +128,13 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
                 </span>
               )}
             </Link>
+            <Link
+              href="/account"
+              aria-label="My account"
+              className="rounded-lg p-2.5 text-kb-charcoal transition-colors hover:bg-kb-mist hover:text-kb-green"
+            >
+              <User size={22} />
+            </Link>
             <Link href="/contact" className="btn btn-primary hidden !px-5 !py-2.5 xl:inline-flex">
               Contact us
             </Link>
@@ -177,6 +185,9 @@ export default function Navbar({ social = [], whatsapp }: { social?: SocialLink[
                     {l.label}
                   </Link>
                 ))}
+                <Link href="/account" onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
+                  My account
+                </Link>
                 <Link href="/cart" onClick={close} className="py-2 font-semibold text-kb-charcoal hover:text-kb-green">
                   Cart{count > 0 ? ` (${count})` : ""}
                 </Link>

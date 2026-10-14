@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail, looksLikeBot } from "@/lib/validation";
 import { notifyOwner } from "@/lib/email";
@@ -6,6 +7,7 @@ import { notifyOwner } from "@/lib/email";
 const SOURCES = ["agritech", "organics", "general"];
 
 export async function POST(request: Request) {
+  if (!(await rateLimit(request, "inquiries", 15, 600))) return tooManyRequests();
   try {
     const body = await request.json();
 

@@ -10,6 +10,9 @@ import { getWhatsappNumber, getUsdRate } from "@/lib/store-settings";
 import { usdEstimate } from "@/lib/currency";
 import { whatsappLink } from "@/lib/whatsapp";
 import { SITE_URL } from "@/lib/site";
+import WishlistButton from "@/components/WishlistButton";
+import ProductCard from "@/components/ProductCard";
+import ProductReviews, { getReviewSummary } from "@/components/reviews/ProductReviews";
 
 // Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
 export const revalidate = 60;
@@ -62,7 +65,29 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const p = product as Product;
-  const [whatsapp, usdRate] = await Promise.all([getWhatsappNumber(), getUsdRate()]);
+  const [whatsapp, usdRate, reviewSummary, related] = await Promise.all([
+    getWhatsappNumber(),
+    getUsdRate(),
+    getReviewSummary(p.id),
+    getRelatedProducts(supabase, p),
+  ]);
+
+  // Lets Google show star ratings under the product in search results (only when there are real reviews).
+  const jsonLd =
+    reviewSummary.count > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: p.name,
+          ...(p.images?.[0] ? { image: p.images[0] } : {}),
+          ...(p.description ? { description: p.description } : {}),
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: Number(reviewSummary.average.toFixed(1)),
+            reviewCount: reviewSummary.count,
+          },
+        }
+      : null;
 
   return (
     <>
@@ -110,6 +135,7 @@ export default async function ProductPage({
 
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <AddToCartButton product={p} />
+          <WishlistButton productId={p.id} productName={p.name} variant="full" />
           {whatsapp && (
             <a
               href={whatsappLink(whatsapp, `Hello KingBoostFarms, I would like to ask about ${p.name} (${SITE_URL}/products/${p.slug}).`)}
@@ -123,6 +149,60 @@ export default async function ProductPage({
         </div>
       </div>
       </div>
+
+      <ProductReviews productId={p.id} summary={reviewSummary} />
+
+      {related.length > 0 && (
+        <section aria-labelledby="related-heading" className="mx-auto max-w-6xl border-t border-kb-forest/10 px-5 py-12">
+          <h2 id="related-heading" className="mb-6 font-display text-2xl font-bold text-kb-forest">You may also like</h2>
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+            {related.map((r) => (
+              <ProductCard key={r.id} product={r} usdRate={usdRate} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          // The data is built on the server from our own database, and "<" is escaped so it can't break out of the tag.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        />
+      )}
     </>
   );
+}
+
+// Same-category products first, topped up with other products so the row is never empty.
+async function getRelatedProducts(supabase: ReturnType<typeof createPublicClient>, product: Product): Promise<Product[]> {
+  const LIMIT = 4;
+  const picked: Product[] = [];
+
+  if (product.category_id) {
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .eq("category_id", product.category_id)
+      .neq("id", product.id)
+      .gt("stock", 0)
+      .order("created_at", { ascending: false })
+      .limit(LIMIT);
+    picked.push(...((data ?? []) as Product[]));
+  }
+
+  if (picked.length < LIMIT) {
+    const exclude = [product.id, ...picked.map((x) => x.id)];
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .not("id", "in", `(${exclude.join(",")})`)
+      .gt("stock", 0)
+      .order("created_at", { ascending: false })
+      .limit(LIMIT - picked.length);
+    picked.push(...((data ?? []) as Product[]));
+  }
+  return picked;
 }

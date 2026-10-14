@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { clean, isEmail, looksLikeBot } from "@/lib/validation";
 import { notifyOwner } from "@/lib/email";
@@ -7,6 +8,7 @@ import { sendQuoteRequestReceivedEmail } from "@/lib/order-emails";
 type RawLine = { name?: unknown; quantity?: unknown; unit?: unknown };
 
 export async function POST(request: Request) {
+  if (!(await rateLimit(request, "quotes", 15, 600))) return tooManyRequests();
   try {
     const body = await request.json();
     if (looksLikeBot(body)) return NextResponse.json({ ok: true });

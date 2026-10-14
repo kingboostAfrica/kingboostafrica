@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/types";
 import { usdEstimate } from "@/lib/currency";
+import WishlistButton from "@/components/WishlistButton";
 
 export default function ProductCard({
   product,
@@ -18,6 +19,7 @@ export default function ProductCard({
   const lowStock = !soldOut && threshold != null && product.stock <= threshold;
 
   return (
+    <div className="relative">
     <Link href={`/products/${product.slug}`} className="card group block">
       <div className="relative aspect-square bg-kb-mist">
         {image ? (
@@ -58,5 +60,7 @@ export default function ProductCard({
         )}
       </div>
     </Link>
+    <WishlistButton productId={product.id} productName={product.name} />
+    </div>
   );
 }
