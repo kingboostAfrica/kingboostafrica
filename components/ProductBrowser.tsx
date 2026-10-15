@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import type { Product } from "@/lib/types";
@@ -26,6 +26,13 @@ export default function ProductBrowser({
   usdRate?: number | null;
 }) {
   const [query, setQuery] = useState("");
+
+  // The home page search box sends people here as /food-mart?q=garri
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the link on arrival
+    if (q) setQuery(q.slice(0, 100));
+  }, []);
   const [sort, setSort] = useState<SortKey>("newest");
   const [inStockOnly, setInStockOnly] = useState(false);
 

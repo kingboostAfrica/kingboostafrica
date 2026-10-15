@@ -10,6 +10,7 @@ import {
   Cpu,
   ShoppingBasket,
   Truck,
+  Check,
 } from "lucide-react";
 import { getPageContent, pick } from "@/lib/content";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -24,6 +25,7 @@ import LearnAndAdvise from "@/components/home/LearnAndAdvise";
 import HomeReviews, { type HomeReview } from "@/components/home/HomeReviews";
 import FarmUpdates, { type FarmUpdate } from "@/components/home/FarmUpdates";
 import QuickContactBar from "@/components/home/QuickContactBar";
+import HeroShopWindow from "@/components/home/HeroShopWindow";
 
 // Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
 export const revalidate = 60;
@@ -182,6 +184,7 @@ export default async function Home() {
 
   const hero = pick(rows, "hero", "main");
   const products = shop.products;
+  const heroProducts = products.filter((p) => p.images?.[0]).slice(0, 3);
 
   // Slides: the hero photo from Site Content first, then the gallery photos marked for the slider
   // (or, until any are marked, the latest ones). No duplicates, at most six.
@@ -208,63 +211,91 @@ export default async function Home() {
         />
         <FieldLines className="pointer-events-none absolute inset-y-0 right-0 h-full w-full opacity-70 lg:w-3/5" />
 
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-12 sm:py-16 lg:grid-cols-2 lg:gap-14 lg:py-20">
-          <div>
-            <h1 className="text-4xl font-bold leading-[1.08] sm:text-5xl lg:text-[3.5rem]">
+        <div
+          className="pointer-events-none absolute -right-24 top-1/2 h-[32rem] w-[32rem] -translate-y-1/2 rounded-full bg-kb-gold/10 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] items-center gap-10 px-5 py-10 sm:py-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14 lg:py-12">
+          <div className="min-w-0">
+            <h1 className="text-4xl font-bold leading-[1.08] sm:text-5xl lg:text-[3.25rem]">
               {hero?.title ?? "Cultivating growth, nourishing nations."}
             </h1>
-            <div className="mt-6 h-1 w-14 rounded-full bg-kb-gold" aria-hidden="true" />
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/75">
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/75">
               {hero?.body ??
                 "KingBoostFarms is a Nigerian agribusiness spanning food retail, education, consulting, technology, and organics — built to strengthen agriculture from farm to table."}
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/food-mart" className="btn btn-gold">
-                Shop Food Mart <ArrowRight size={18} aria-hidden="true" />
-              </Link>
-              <Link href="/about" className="btn btn-outline-light">
-                About KingBoostFarms
-              </Link>
-            </div>
 
-            <div className="mt-10">
-              <p className="mb-3 text-sm font-semibold text-white/60">Explore what we do</p>
-              <ul className="flex flex-wrap gap-2">
-                {verticalDefaults.map((v) => (
-                  <li key={v.slug}>
-                    <Link
-                      href={`/${v.slug}`}
-                      className="inline-flex items-center rounded-full border border-white/25 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:border-kb-gold hover:bg-kb-gold hover:text-kb-forest"
-                    >
-                      {v.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <form action="/food-mart" method="get" role="search" className="mt-7 flex max-w-xl gap-2 rounded-xl bg-white p-1.5 shadow-lg">
+              <label htmlFor="hero-search" className="sr-only">Search products</label>
+              <input
+                id="hero-search"
+                name="q"
+                type="search"
+                autoComplete="off"
+                placeholder="Search garri, palm oil, flour"
+                className="min-w-0 flex-1 rounded-lg bg-transparent px-4 py-3 text-base text-kb-charcoal placeholder:text-kb-charcoal/45 focus:outline-none"
+              />
+              <button type="submit" className="btn btn-gold shrink-0 !px-5">
+                Search
+              </button>
+            </form>
+
+            <ul className="mt-4 flex flex-wrap gap-2" aria-label="Shop by category">
+              <li>
+                <Link
+                  href="/food-mart"
+                  className="inline-flex rounded-full bg-kb-gold px-3.5 py-1.5 text-sm font-semibold text-kb-forest transition-colors hover:bg-white"
+                >
+                  All products
+                </Link>
+              </li>
+              {categories.slice(0, 4).map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/food-mart/${c.slug}`}
+                    className="inline-flex rounded-full border border-white/30 px-3.5 py-1.5 text-sm font-medium text-white/90 transition-colors hover:border-kb-gold hover:bg-kb-gold hover:text-kb-forest"
+                  >
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/80">
+              {["100% natural", "No preservatives", "Delivery or pickup"].map((t) => (
+                <li key={t} className="flex items-center gap-2">
+                  <Check size={16} className="text-kb-gold" aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Hero visual: the photo set in Site Content, or the field artwork until one is uploaded */}
-          <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:max-w-lg">
-            <div
-              className="absolute -bottom-4 -right-4 hidden h-full w-full rounded-2xl border-2 border-kb-gold/60 sm:block"
-              aria-hidden="true"
-            />
-            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/15">
-              {slides.length > 0 ? (
-                <HeroSlider slides={slides} />
-              ) : (
-                <>
-                  <FieldArt className="absolute inset-0 h-full w-full" />
-                  <div className="absolute inset-x-5 bottom-5 rounded-lg bg-kb-forest/85 px-4 py-3 backdrop-blur">
-                    <p className="font-display text-base italic text-white">
-                      Cultivating Growth, Nourishing Nations
-                    </p>
-                  </div>
-                </>
-              )}
+          {/* Hero visual: a shop window of real products. Falls back to the photo slider until there are three with photos. */}
+          {heroProducts.length >= 3 ? (
+            <HeroShopWindow products={heroProducts} />
+          ) : (
+            <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:max-w-lg">
+              <div
+                className="absolute -bottom-4 -right-4 hidden h-full w-full rounded-2xl border-2 border-kb-gold/60 sm:block"
+                aria-hidden="true"
+              />
+              <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/15">
+                {slides.length > 0 ? (
+                  <HeroSlider slides={slides} />
+                ) : (
+                  <>
+                    <FieldArt className="absolute inset-0 h-full w-full" />
+                    <div className="absolute inset-x-5 bottom-5 rounded-lg bg-kb-forest/85 px-4 py-3 backdrop-blur">
+                      <p className="font-display text-base italic text-white">
+                        Cultivating Growth, Nourishing Nations
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Benefits strip */}
