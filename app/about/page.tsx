@@ -42,17 +42,6 @@ export default async function AboutPage() {
         description={intro?.title ?? "Growing Value. Nourishing Lives."}
       />
       <div className="mx-auto max-w-6xl px-5 py-14">
-      {paragraphs.map((p, i) => (
-        <p
-          key={i}
-          className={`max-w-3xl text-kb-charcoal/75 leading-relaxed ${
-            i === 0 ? "text-lg mb-6" : "mb-12"
-          }`}
-        >
-          {p}
-        </p>
-      ))}
-
       {leader?.image_url && (
         <section
           aria-labelledby="ceo-heading"
@@ -84,6 +73,17 @@ export default async function AboutPage() {
           </div>
         </section>
       )}
+
+      {paragraphs.map((p, i) => (
+        <p
+          key={i}
+          className={`max-w-3xl text-kb-charcoal/75 leading-relaxed ${
+            i === 0 ? "text-lg mb-6" : "mb-12"
+          }`}
+        >
+          {p}
+        </p>
+      ))}
 
       <div className="grid sm:grid-cols-2 gap-6 mb-14">
         {verticalDefaults.map((v) => {
