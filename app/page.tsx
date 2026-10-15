@@ -13,11 +13,17 @@ import {
 } from "lucide-react";
 import { getPageContent, pick } from "@/lib/content";
 import { createPublicClient } from "@/lib/supabase/public";
-import type { Product } from "@/lib/types";
+import type { Category, ConsultingService, Course, Product } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
-import { getDefaultLowStockThreshold, getUsdRate } from "@/lib/store-settings";
+import { getCheckoutOptions, getContactInfo, getDefaultLowStockThreshold, getUsdRate, getWhatsappNumber } from "@/lib/store-settings";
 import { FieldArt, FieldLines } from "@/components/FieldArt";
 import HeroSlider, { type Slide } from "@/components/HeroSlider";
+import WhyChoose from "@/components/home/WhyChoose";
+import ProcessSection from "@/components/home/ProcessSection";
+import LearnAndAdvise from "@/components/home/LearnAndAdvise";
+import HomeReviews, { type HomeReview } from "@/components/home/HomeReviews";
+import FarmUpdates, { type FarmUpdate } from "@/components/home/FarmUpdates";
+import QuickContactBar from "@/components/home/QuickContactBar";
 
 // Served from a saved copy and rebuilt at most every 60 seconds (and instantly after admin edits).
 export const revalidate = 60;
@@ -69,24 +75,113 @@ async function loadGallerySlides(): Promise<Slide[]> {
   return combined.map(toSlide);
 }
 
-export default async function Home() {
-  const supabase = createPublicClient();
-  const [rows, { data: featured }, gallerySlides, lowStockDefault, usdRate] = await Promise.all([
-    getPageContent("home"),
-    supabase
+// Best sellers when customers have bought enough, otherwise the newest products. Never throws:
+// if the database pieces from supabase/014 are not installed yet, it simply shows the newest.
+async function loadShopProducts(): Promise<{ products: Product[]; bestSellers: boolean }> {
+  const db = createPublicClient();
+  const newest = async () => {
+    const { data } = await db
       .from("products")
       .select("*")
       .eq("is_active", true)
       .gt("stock", 0)
       .order("created_at", { ascending: false })
-      .limit(4),
+      .limit(8);
+    return (data as Product[] | null) ?? [];
+  };
+
+  try {
+    const { data: ranked } = await db.from("top_selling_products").select("product_id, rank").order("rank").limit(8);
+    const ids = (ranked ?? []).map((r: { product_id: string }) => r.product_id);
+    if (ids.length >= 4) {
+      const { data } = await db.from("products").select("*").in("id", ids).eq("is_active", true).gt("stock", 0);
+      const byId = new Map(((data as Product[] | null) ?? []).map((p) => [p.id, p]));
+      const ordered = ids.map((id: string) => byId.get(id)).filter((p): p is Product => Boolean(p));
+      if (ordered.length >= 4) return { products: ordered, bestSellers: true };
+    }
+  } catch {
+    // fall through to the newest products
+  }
+  return { products: await newest(), bestSellers: false };
+}
+
+async function loadHomeReviews(): Promise<HomeReview[]> {
+  try {
+    const db = createPublicClient();
+    const { data } = await db
+      .from("public_reviews")
+      .select("id, product_id, reviewer_name, rating, title, body")
+      .gte("rating", 4)
+      .order("created_at", { ascending: false })
+      .limit(3);
+    const rows = (data ?? []) as { id: string; product_id: string; reviewer_name: string; rating: number; title: string | null; body: string | null }[];
+    if (rows.length === 0) return [];
+    const { data: prods } = await db.from("products").select("id, name, slug").in("id", rows.map((r) => r.product_id));
+    const byId = new Map(((prods ?? []) as { id: string; name: string; slug: string }[]).map((p) => [p.id, p]));
+    return rows.map((r) => ({
+      id: r.id,
+      reviewer_name: r.reviewer_name,
+      rating: r.rating,
+      title: r.title,
+      body: r.body,
+      product: byId.get(r.product_id) ? { name: byId.get(r.product_id)!.name, slug: byId.get(r.product_id)!.slug } : null,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function loadFarmUpdates(): Promise<FarmUpdate[]> {
+  try {
+    const { data } = await createPublicClient()
+      .from("farm_updates")
+      .select("id, title, body, image_url, published_at")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(3);
+    return (data as FarmUpdate[] | null) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const supabase = createPublicClient();
+  const [
+    rows,
+    shop,
+    gallerySlides,
+    lowStockDefault,
+    usdRate,
+    { data: categoryRows },
+    { data: courseRows },
+    { data: serviceRows },
+    homeReviews,
+    farmUpdates,
+    checkout,
+    whatsapp,
+    contact,
+  ] = await Promise.all([
+    getPageContent("home"),
+    loadShopProducts(),
     loadGallerySlides(),
     getDefaultLowStockThreshold(),
     getUsdRate(),
+    supabase.from("categories").select("*").in("type", ["product", "both"]).order("name").limit(10),
+    supabase.from("courses").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(2),
+    supabase.from("consulting_services").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(2),
+    loadHomeReviews(),
+    loadFarmUpdates(),
+    getCheckoutOptions(),
+    getWhatsappNumber(),
+    getContactInfo(),
   ]);
+  const categories = (categoryRows as Category[] | null) ?? [];
+  const courses = (courseRows as Course[] | null) ?? [];
+  const services = (serviceRows as ConsultingService[] | null) ?? [];
 
   const hero = pick(rows, "hero", "main");
-  const products = (featured as Product[] | null) ?? [];
+  const products = shop.products;
 
   // Slides: the hero photo from Site Content first, then the gallery photos marked for the slider
   // (or, until any are marked, the latest ones). No duplicates, at most six.
@@ -255,27 +350,57 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ───────── Featured products (only when there are some) ───────── */}
+      {/* ───────── Shop: best sellers, or the newest products ───────── */}
       {products.length > 0 && (
-        <section className="bg-kb-mist">
+        <section aria-labelledby="shop-heading" className="bg-kb-mist">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
-            <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="text-3xl font-bold text-kb-forest sm:text-4xl">Fresh from the Food Mart</h2>
-                <p className="mt-2 text-kb-charcoal/70">The latest produce and staples, ready to order.</p>
+                <h2 id="shop-heading" className="text-3xl font-bold text-kb-forest sm:text-4xl">
+                  {shop.bestSellers ? "Our best sellers" : "Fresh from the Food Mart"}
+                </h2>
+                <p className="mt-2 text-kb-charcoal/70">
+                  {shop.bestSellers ? "The products our customers order most." : "The latest produce and staples, ready to order."}
+                </p>
               </div>
               <Link href="/food-mart" className="btn btn-outline">
                 View all products
               </Link>
             </div>
+            {categories.length > 0 && (
+              <ul className="mb-8 flex flex-wrap gap-2" aria-label="Shop by category">
+                {categories.map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      href={`/food-mart/${c.slug}`}
+                      className="inline-flex rounded-full border border-kb-forest/20 bg-white px-3.5 py-1.5 text-sm font-medium text-kb-charcoal transition-colors hover:border-kb-green hover:text-kb-green"
+                    >
+                      {c.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
               {products.map((p) => (
-                <ProductCard key={p.id} product={p} lowStockDefault={lowStockDefault} usdRate={usdRate} />
+                <ProductCard key={p.id} product={p} lowStockDefault={lowStockDefault} usdRate={usdRate} showAdd />
               ))}
             </div>
           </div>
         </section>
       )}
+
+      <WhyChoose rows={rows} />
+      <ProcessSection rows={rows} />
+      <LearnAndAdvise courses={courses} services={services} />
+      <HomeReviews reviews={homeReviews} />
+      <FarmUpdates updates={farmUpdates} />
+      <QuickContactBar
+        whatsapp={whatsapp}
+        phone={contact.phone}
+        zones={checkout.zones.map((z) => z.name)}
+        pickupEnabled={checkout.pickup.enabled}
+      />
 
       {/* ───────── What we stand for ───────── */}
       <section className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:py-24 lg:grid-cols-[0.9fr_1.1fr]">

@@ -50,12 +50,18 @@ export default function ContentEditor({
         const isLeader = section === "leader";
         const showIcon = section !== "hero" && section !== "intro" && !isLeader;
         // Photo slots: the homepage hero photo and the CEO photo on the About page.
-        const showImage = section === "hero" || isLeader;
+        const showImage = section === "hero" || isLeader || section === "process";
 
         return (
           <div key={section}>
             <h2 className="text-sm font-semibold uppercase tracking-wider text-kb-gold-dark mb-4">
-              {isLeader ? "CEO profile (About page)" : section.replace(/_/g, " ")}
+              {isLeader
+                ? "CEO profile (About page)"
+                : section === "why"
+                  ? "Why choose KingBoost Foodmart"
+                  : section === "process"
+                    ? "From our farm to your table (add a photo to each step if you like)"
+                    : section.replace(/_/g, " ")}
             </h2>
             <div className="grid sm:grid-cols-2 gap-5">
               {sectionRows.map((row) => (

@@ -18,6 +18,7 @@ import {
   ClipboardList,
   UploadCloud,
   MessageSquareText,
+  Newspaper,
 } from "lucide-react";
 
 type Tool = {
@@ -163,6 +164,12 @@ export default async function AdminDashboardPage() {
           icon: FileText,
           label: "Site content",
           desc: "Edit the text and hero photo on the main pages.",
+        },
+        {
+          href: "/admin/updates",
+          icon: Newspaper,
+          label: "Farm updates",
+          desc: "Post harvest news and announcements for the home page.",
         },
         {
           href: "/admin/social",

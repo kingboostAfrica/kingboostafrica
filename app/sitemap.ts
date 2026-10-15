@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/agritech",
     "/organics",
     "/gallery",
+    "/updates",
     "/about",
     "/contact",
     "/delivery-and-refunds",

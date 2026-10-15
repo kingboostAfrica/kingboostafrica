@@ -3,15 +3,18 @@ import Image from "next/image";
 import type { Product } from "@/lib/types";
 import { usdEstimate } from "@/lib/currency";
 import WishlistButton from "@/components/WishlistButton";
+import AddToCartButton from "@/components/AddToCartButton";
 
 export default function ProductCard({
   product,
   lowStockDefault = null,
   usdRate = null,
+  showAdd = false,
 }: {
   product: Product;
   lowStockDefault?: number | null;
   usdRate?: number | null;
+  showAdd?: boolean;
 }) {
   const image = product.images?.[0];
   const soldOut = product.stock <= 0;
@@ -61,6 +64,11 @@ export default function ProductCard({
       </div>
     </Link>
     <WishlistButton productId={product.id} productName={product.name} />
+    {showAdd && (
+      <div className="mt-2 [&>button]:w-full">
+        <AddToCartButton product={product} />
+      </div>
+    )}
     </div>
   );
 }
