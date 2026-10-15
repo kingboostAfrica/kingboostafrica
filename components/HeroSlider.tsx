@@ -16,7 +16,17 @@ const subscribe = (cb: () => void) => {
 // Photo slider for the homepage hero: slides on its own every few seconds, pauses when you hover
 // or touch it, has arrows, dots and a pause button, and does not move at all for people who have
 // asked their device to reduce motion.
-export default function HeroSlider({ slides }: { slides: Slide[] }) {
+export default function HeroSlider({
+  slides,
+  sizes = "(min-width: 1024px) 32rem, 90vw",
+  priority = true,
+  label = "KingBoostFarms photos",
+}: {
+  slides: Slide[];
+  sizes?: string;
+  priority?: boolean;
+  label?: string;
+}) {
   const count = slides.length;
   const [index, setIndex] = useState(0);
   const [hover, setHover] = useState(false);
@@ -41,7 +51,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
     <div
       role="region"
       aria-roledescription="carousel"
-      aria-label="KingBoostFarms photos"
+      aria-label={label}
       className="absolute inset-0"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -75,9 +85,9 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
               src={s.src}
               alt={s.alt}
               fill
-              priority={i === 0}
-              loading={i === 0 || i === index || i === (index + 1) % count ? "eager" : "lazy"}
-              sizes="(min-width: 1024px) 32rem, 90vw"
+              priority={priority && i === 0}
+              loading={(priority && i === 0) || i === index || i === (index + 1) % count ? "eager" : "lazy"}
+              sizes={sizes}
               className="object-cover"
             />
             {s.caption && (

@@ -32,7 +32,12 @@ export default async function AboutPage() {
   const intro = pick(rows, "intro", "main");
   const paragraphs = (intro?.body ?? introDefault).split("\n\n");
   const leader = pick(rows, "leader", "ceo");
-  const ceoName = leader?.title?.trim();
+  // The saved title can read "Taiwo Adeyemi Founder & Chief Executive Officer". Split the role off
+  // so the name is the heading and the role is shown once, above it.
+  const rawTitle = leader?.title?.trim() ?? "";
+  const roleMatch = rawTitle.match(/^(.*?)[\s,|–-]*((?:Co-?Founder|Founder|Chief|CEO)\b.*)$/i);
+  const ceoName = (roleMatch ? roleMatch[1].trim() : rawTitle) || undefined;
+  const ceoRole = roleMatch?.[2].trim() || "Chief Executive Officer";
   const ceoText = (leader?.body ?? "").split("\n\n").filter(Boolean);
 
   return (
@@ -52,7 +57,7 @@ export default async function AboutPage() {
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-lg ring-1 ring-kb-forest/10">
               <Image
                 src={leader.image_url}
-                alt={ceoName ? `${ceoName}, Chief Executive Officer of KingBoostFarms` : "The Chief Executive Officer of KingBoostFarms"}
+                alt={ceoName ? `${ceoName}, ${ceoRole} of KingBoostFarms` : "The Chief Executive Officer of KingBoostFarms"}
                 fill
                 sizes="(min-width: 768px) 17rem, 80vw"
                 className="object-cover"
@@ -60,7 +65,7 @@ export default async function AboutPage() {
             </div>
           </div>
           <div>
-            {ceoName && <p className="text-sm font-semibold text-kb-gold-dark">Chief Executive Officer</p>}
+            {ceoName && <p className="text-sm font-semibold text-kb-gold-dark">{ceoRole}</p>}
             <h2 id="ceo-heading" className="mt-1 font-display text-3xl font-bold text-kb-forest">
               {ceoName ?? "Meet our Chief Executive Officer"}
             </h2>
