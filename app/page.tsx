@@ -421,6 +421,28 @@ export default async function Home() {
         </section>
       )}
 
+      {/* ───────── Promotions strip: the photo slider, moved down from the hero ───────── */}
+      {heroProducts.length >= 3 && slides.length > 0 && (
+        <section aria-labelledby="promo-heading" className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <h2 id="promo-heading" className="text-3xl font-bold text-kb-forest sm:text-4xl">
+              Latest from KingBoostFarms
+            </h2>
+            <Link href="/gallery" className="btn btn-outline">
+              See the gallery
+            </Link>
+          </div>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-kb-forest shadow-lg ring-1 ring-kb-forest/10 sm:aspect-[16/9] lg:aspect-[21/9]">
+            <HeroSlider
+              slides={slides}
+              sizes="(min-width: 1152px) 72rem, 100vw"
+              priority={false}
+              label="Latest KingBoostFarms photos"
+            />
+          </div>
+        </section>
+      )}
+
       <WhyChoose rows={rows} />
       <ProcessSection rows={rows} />
       <LearnAndAdvise courses={courses} services={services} />
