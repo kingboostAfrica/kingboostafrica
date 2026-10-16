@@ -39,6 +39,17 @@ const sections: PolicySection[] = [
     ),
   },
   {
+    id: "reviews",
+    title: "Customer reviews",
+    body: (
+      <P>
+        Reviews are the opinions of the customers who write them, not of KingBoost Farms Ltd. Only customers who have
+        bought a product can review it, and every review is checked before it appears. We may decline or remove a review
+        that is abusive, off-topic, misleading or breaks the law.
+      </P>
+    ),
+  },
+  {
     id: "allergies",
     title: "Allergies, dietary needs and health",
     body: (
@@ -156,7 +167,7 @@ export default function DisclaimerPage() {
     <PolicyLayout
       title="Disclaimer"
       description="Important information about the products, courses, advice and content on this website."
-      updated="September 2026"
+      updated="October 2026"
       sections={sections}
     />
   );

@@ -46,12 +46,25 @@ const sections: PolicySection[] = [
             preferred date.
           </li>
           <li>
+            <strong>If you create an account:</strong> your email address and a password (stored in scrambled form by
+            our login provider, so we cannot read it), plus the name, phone number and delivery address you choose to
+            save, the products you add to your wishlist, and your order history, which we match to your confirmed email
+            address.
+          </li>
+          <li>
+            <strong>If you write a review:</strong> your rating and comment, and a short display name made from your name
+            (for example &ldquo;Ada O.&rdquo;). We show a review on the site only after we have approved it, and only
+            customers who bought the product can post one.
+          </li>
+          <li>
             <strong>Payments:</strong> when you pay online, Paystack collects your payment details on its own secure
             page. We receive a payment reference and whether it succeeded, and never see or store your full card number.
           </li>
           <li>
             <strong>Technical data:</strong> like most websites, our hosting provider may log technical details such as
-            IP address, browser type and the pages requested, to keep the site running and secure.
+            IP address, browser type and the pages requested, to keep the site running and secure. We also use your IP
+            address to count how often forms and checkout are used from one place, so we can block spam and automated
+            abuse. These counts are short-lived.
           </li>
           <li>
             <strong>Messages on WhatsApp:</strong> if you choose to chat with us on WhatsApp, your messages and phone
@@ -73,6 +86,9 @@ const sections: PolicySection[] = [
             refunds;
           </li>
           <li>to answer your questions and handle enrolments and consulting requests;</li>
+          <li>
+            to run your account (saved details, wishlist and order history) and to publish approved product reviews;
+          </li>
           <li>to prevent fraud and keep the website and our systems secure;</li>
           <li>to keep records we need for accounting, tax and other legal reasons;</li>
           <li>to improve our products, services and website.</li>
@@ -124,7 +140,8 @@ const sections: PolicySection[] = [
             <strong>Paystack</strong> to process online payments and refunds;
           </li>
           <li>
-            <strong>Supabase</strong> for our database and secure login, where orders and messages are stored;
+            <strong>Supabase</strong> for our database and secure login, where orders, messages, customer accounts,
+            wishlists and reviews are stored;
           </li>
           <li>
             <strong>Netlify</strong> to host the website;
@@ -165,7 +182,8 @@ const sections: PolicySection[] = [
       <P>
         We keep your information only for as long as we need it for the purposes above. Order and payment records are kept
         for the period needed for accounting, tax and legal purposes. Messages and enquiries are kept while we deal with
-        them and for a reasonable time afterwards in case you follow up. After that we delete or anonymise the
+        them and for a reasonable time afterwards in case you follow up. Account details, wishlist items and reviews are
+        kept until you ask us to delete them. After that we delete or anonymise the
         information.
       </P>
     ),
@@ -229,7 +247,8 @@ const sections: PolicySection[] = [
             back. It stays on your device.
           </li>
           <li>
-            <strong>Login cookies</strong> are used only for our team members when they sign in to manage the site.
+            <strong>Login cookies</strong> keep you signed in if you have a customer account, and let our team members
+            sign in to manage the site. They are removed when you log out.
           </li>
         </UL>
         <P>
@@ -288,7 +307,7 @@ export default function PrivacyPolicyPage() {
     <PolicyLayout
       title="Privacy Policy"
       description="What personal information we collect, why we collect it, who we share it with, and the rights you have."
-      updated="September 2026"
+      updated="October 2026"
       sections={sections}
     />
   );
