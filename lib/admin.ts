@@ -10,6 +10,13 @@ async function loadAdmin() {
   } = await supabase.auth.getUser();
   if (!user) return { supabase, user: null, role: null as AdminRole | null };
 
+  // Two-step login: someone who turned it on must have given their code in this session.
+  // (Anyone who has not turned it on is unaffected.)
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    return { supabase, user: null, role: null as AdminRole | null };
+  }
+
   // select("*") so this also works before the `role` column exists (everyone is then a full admin)
   const { data: row } = await supabase.from("admins").select("*").eq("id", user.id).single();
   if (!row) return { supabase, user, role: null as AdminRole | null };

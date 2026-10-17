@@ -1,5 +1,6 @@
 import { requireStaff } from "@/lib/admin";
 import PasswordForm from "@/components/admin/PasswordForm";
+import TwoStepSetup from "@/components/admin/TwoStepSetup";
 
 export default async function AdminAccountPage() {
   const { user, role } = await requireStaff();
@@ -11,6 +12,12 @@ export default async function AdminAccountPage() {
       </p>
       <h2 className="font-display text-xl font-bold text-kb-forest mb-4">Change your password</h2>
       <PasswordForm />
+      <h2 className="font-display text-xl font-bold text-kb-forest mt-12 mb-2">Two-step login</h2>
+      <p className="text-sm text-kb-charcoal/60 mb-4">
+        Adds a 6-digit code from an authenticator app (Google Authenticator, Microsoft Authenticator, Authy) to your
+        password, so a stolen password alone cannot open the admin.
+      </p>
+      <TwoStepSetup />
     </div>
   );
 }

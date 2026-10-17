@@ -26,7 +26,10 @@ export default function HeroShopWindow({ products }: { products: Product[] }) {
       </div>
       <div className="flex items-baseline justify-between gap-2 bg-kb-forest px-3.5 py-2.5 text-white">
         <span className="truncate text-sm font-semibold">{p.name}</span>
-        <span className="shrink-0 text-sm font-bold text-kb-gold">₦{p.price.toLocaleString()}</span>
+        <span className="shrink-0 text-sm font-bold text-kb-gold">
+          ₦{p.price.toLocaleString()}
+          {p.unit && <span className="text-xs font-medium text-white/70"> / {p.unit}</span>}
+        </span>
       </div>
     </Link>
   );
