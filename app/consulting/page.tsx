@@ -7,7 +7,10 @@ import type { ConsultingService } from "@/lib/types";
 // Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
 export const revalidate = 300;
 
-export const metadata = { title: "Consulting — KingBoostFarms" };
+export const metadata = {
+  title: "Consulting — KingBoostFarms",
+  description: "Hands-on advisory for farms, cooperatives and agribusinesses, from setting up operations to scaling production.",
+};
 
 export default async function ConsultingPage() {
   const supabase = createPublicClient();

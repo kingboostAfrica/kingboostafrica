@@ -6,7 +6,10 @@ import PageHeader from "@/components/PageHeader";
 // Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
 export const revalidate = 300;
 
-export const metadata = { title: "Organics — KingBoostFarms" };
+export const metadata = {
+  title: "Organics — KingBoostFarms",
+  description: "Organic inputs, certification guidance and naturally grown produce sourcing from KingBoostFarms.",
+};
 
 const offeringDefaults = [
   { key: "offering-1", icon: "Leaf", title: "Organic Inputs", body: "Organic fertilizers, compost, and soil amendments free of synthetic chemicals." },

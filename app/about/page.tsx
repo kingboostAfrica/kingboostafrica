@@ -6,7 +6,10 @@ import PageHeader from "@/components/PageHeader";
 // Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
 export const revalidate = 300;
 
-export const metadata = { title: "About Us — KingBoostFarms" };
+export const metadata = {
+  title: "About Us — KingBoostFarms",
+  description: "KingBoostFarms is a Nigerian agribusiness in food retail, training, consulting, technology and organics.",
+};
 
 const verticalDefaults = [
   { key: "food-mart", name: "Food Mart", desc: "Pure, natural, nutritious produce sold direct to households and businesses." },

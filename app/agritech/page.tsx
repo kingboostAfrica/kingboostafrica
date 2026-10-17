@@ -6,7 +6,10 @@ import PageHeader from "@/components/PageHeader";
 // Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
 export const revalidate = 300;
 
-export const metadata = { title: "Agritech — KingBoostFarms" };
+export const metadata = {
+  title: "Agritech — KingBoostFarms",
+  description: "Farm technology from KingBoostFarms: precision farming, smart irrigation and tools that help farms grow.",
+};
 
 const capabilityDefaults = [
   { key: "capability-1", icon: "Satellite", title: "Precision Farming", body: "Satellite and sensor-driven insights to plan planting, monitor crop health, and optimize yield." },

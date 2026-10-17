@@ -8,7 +8,10 @@ import { Clock } from "lucide-react";
 // Served from a saved copy and rebuilt at most every 300 seconds (and instantly after admin edits).
 export const revalidate = 300;
 
-export const metadata = { title: "Academy — KingBoostFarms" };
+export const metadata = {
+  title: "Academy — KingBoostFarms",
+  description: "Practical courses in farming, food processing and agribusiness management from KingBoostFarms.",
+};
 
 export default async function AcademyPage() {
   const supabase = createPublicClient();

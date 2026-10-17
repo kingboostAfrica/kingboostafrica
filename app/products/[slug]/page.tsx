@@ -130,7 +130,7 @@ export default async function ProductPage({
         )}
 
         <p className="text-sm text-kb-charcoal/50 mt-4">
-          {p.stock > 0 ? `${p.stock} ${p.unit}(s) available` : "Out of stock"}
+          {p.stock > 0 ? `${p.stock} ${p.unit} in stock` : "Out of stock"}
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-4">
