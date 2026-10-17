@@ -9,9 +9,9 @@ export const revalidate = 300;
 export const metadata = { title: "Organics — KingBoostFarms" };
 
 const offeringDefaults = [
-  { key: "offering-1", icon: "Leaf", title: "Certified Organic Inputs", body: "Organic fertilizers, compost, and soil amendments free of synthetic chemicals." },
+  { key: "offering-1", icon: "Leaf", title: "Organic Inputs", body: "Organic fertilizers, compost, and soil amendments free of synthetic chemicals." },
   { key: "offering-2", icon: "ShieldCheck", title: "Certification Support", body: "Guidance for farms pursuing organic certification and compliant practices." },
-  { key: "offering-3", icon: "Sprout", title: "Organic Produce Sourcing", body: "Sourcing and supply of certified organic crops for retail and food service." },
+  { key: "offering-3", icon: "Sprout", title: "Organic Produce Sourcing", body: "Sourcing and supply of naturally grown crops for retail and food service." },
   { key: "offering-4", icon: "Recycle", title: "Sustainable Practices", body: "Composting, crop rotation, and natural pest management consulting." },
 ];
 
@@ -27,12 +27,12 @@ export default async function OrganicsPage() {
         title="Organics"
         description={
           intro?.body ??
-          "KingBoostFarms Organics supports growers and buyers who want food and farming free of synthetic chemicals — from inputs and certification to sourcing certified organic produce."
+          "KingBoostFarms Organics supports growers and buyers who want to farm and eat with fewer synthetic chemicals — from organic inputs and certification guidance to sourcing naturally grown produce."
         }
       />
       <div className="mx-auto max-w-6xl px-5 py-14">
         <h2 className="mb-8 text-2xl font-bold text-kb-forest sm:text-3xl">
-          {intro?.title ?? "Certified organic solutions"}
+          {intro?.title ?? "Organic and natural farming solutions"}
         </h2>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-16">

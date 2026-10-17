@@ -13,7 +13,7 @@ const verticalDefaults = [
   { key: "academy", name: "Academy", desc: "Training and courses that build agribusiness skills across Nigeria." },
   { key: "consulting", name: "Consulting", desc: "Expert advisory for farms, cooperatives, and agribusinesses." },
   { key: "agritech", name: "Agritech", desc: "Practical technology that makes modern farming more productive." },
-  { key: "organics", name: "Organics", desc: "Certified organic inputs and produce for a healthier food system." },
+  { key: "organics", name: "Organics", desc: "Organic inputs and naturally grown produce for a healthier food system." },
 ];
 
 const pillarDefaults = [

@@ -28,7 +28,7 @@ const verticals = [
   { href: "/academy", label: "Academy", desc: "Agribusiness training", icon: GraduationCap },
   { href: "/consulting", label: "Consulting", desc: "Expert farm advisory", icon: Briefcase },
   { href: "/agritech", label: "Agritech", desc: "Technology for farming", icon: Cpu },
-  { href: "/organics", label: "Organics", desc: "Certified organic solutions", icon: Leaf },
+  { href: "/organics", label: "Organics", desc: "Organic and natural solutions", icon: Leaf },
 ];
 
 const secondary = [

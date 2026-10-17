@@ -4,8 +4,8 @@ import { Award, Leaf, ShieldCheck, Sparkles } from "lucide-react";
 
 // Edit these words in Admin > Site content > Home Page > "why". The defaults below are used until then.
 const defaults = [
-  { key: "why-1", icon: Leaf, title: "100% natural", body: "Pure, natural food made from the crops we grow and source." },
-  { key: "why-2", icon: ShieldCheck, title: "No preservatives", body: "Our Food Mart packs are made without added preservatives." },
+  { key: "why-1", icon: Leaf, title: "Natural ingredients", body: "Simple, natural food made from the crops we grow and source." },
+  { key: "why-2", icon: ShieldCheck, title: "No added preservatives", body: "Our Food Mart packs are made without added preservatives." },
   { key: "why-3", icon: Sparkles, title: "Hygienically processed", body: "Prepared and packed with care, in clean conditions." },
   { key: "why-4", icon: Award, title: "Premium quality", body: "Carefully selected and packed to a standard we are proud to put our name on." },
 ];

@@ -35,7 +35,7 @@ const verticalDefaults = [
   { key: "academy", slug: "academy", name: "Academy", desc: "Training & courses in agribusiness", icon: GraduationCap },
   { key: "consulting", slug: "consulting", name: "Consulting", desc: "Expert agribusiness advisory", icon: Briefcase },
   { key: "agritech", slug: "agritech", name: "Agritech", desc: "Technology for modern farming", icon: Cpu },
-  { key: "organics", slug: "organics", name: "Organics", desc: "Certified organic solutions", icon: Leaf },
+  { key: "organics", slug: "organics", name: "Organics", desc: "Organic and natural farming solutions", icon: Leaf },
 ];
 
 const trustDefaults = [
@@ -262,7 +262,7 @@ export default async function Home() {
             </ul>
 
             <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/80">
-              {["100% natural", "No preservatives", "Delivery or pickup"].map((t) => (
+              {["Natural ingredients", "No added preservatives", "Delivery or pickup"].map((t) => (
                 <li key={t} className="flex items-center gap-2">
                   <Check size={16} className="text-kb-gold" aria-hidden="true" />
                   {t}
