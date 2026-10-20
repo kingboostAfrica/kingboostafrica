@@ -432,11 +432,12 @@ export default async function Home() {
               See the gallery
             </Link>
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-kb-forest shadow-lg ring-1 ring-kb-forest/10 sm:aspect-[16/9] lg:aspect-[21/9]">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-kb-forest shadow-lg ring-1 ring-kb-forest/10 sm:aspect-[16/9] lg:aspect-[2/1]">
             <HeroSlider
               slides={slides}
               sizes="(min-width: 1152px) 72rem, 100vw"
               priority={false}
+              fit="contain"
               label="Latest KingBoostFarms photos"
             />
           </div>

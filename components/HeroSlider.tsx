@@ -21,11 +21,14 @@ export default function HeroSlider({
   sizes = "(min-width: 1024px) 32rem, 90vw",
   priority = true,
   label = "KingBoostFarms photos",
+  fit = "cover",
 }: {
   slides: Slide[];
   sizes?: string;
   priority?: boolean;
   label?: string;
+  // "cover" fills the frame (and crops); "contain" shows the whole photo, with a soft blurred copy behind it.
+  fit?: "cover" | "contain";
 }) {
   const count = slides.length;
   const [index, setIndex] = useState(0);
@@ -81,6 +84,17 @@ export default function HeroSlider({
             aria-hidden={i !== index}
             className="relative h-full w-full shrink-0"
           >
+            {fit === "contain" && (
+              <Image
+                src={s.src}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="12vw"
+                loading="lazy"
+                className="scale-110 object-cover opacity-60 blur-2xl"
+              />
+            )}
             <Image
               src={s.src}
               alt={s.alt}
@@ -88,7 +102,7 @@ export default function HeroSlider({
               priority={priority && i === 0}
               loading={(priority && i === 0) || i === index || i === (index + 1) % count ? "eager" : "lazy"}
               sizes={sizes}
-              className="object-cover"
+              className={fit === "contain" ? "object-contain" : "object-cover"}
             />
             {s.caption && (
               <p className="absolute inset-x-4 bottom-4 rounded-lg bg-kb-forest/80 px-3 py-2 text-sm text-white backdrop-blur">
