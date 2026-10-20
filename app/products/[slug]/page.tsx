@@ -138,7 +138,7 @@ export default async function ProductPage({
           <WishlistButton productId={p.id} productName={p.name} variant="full" />
           {whatsapp && (
             <a
-              href={whatsappLink(whatsapp, `Hello KingBoostFarms, I would like to ask about ${p.name} (${SITE_URL}/products/${p.slug}).`)}
+              href={whatsappLink(whatsapp, `Hello KingBoostFarms, I would like to ask about ${p.name}.\n${SITE_URL}/products/${p.slug}`)}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline"
