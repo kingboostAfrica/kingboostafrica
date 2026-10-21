@@ -184,7 +184,11 @@ export default async function Home() {
 
   const hero = pick(rows, "hero", "main");
   const products = shop.products;
-  const heroProducts = products.filter((p) => p.images?.[0]).slice(0, 3);
+  // Up to nine products with photos for the rotating shop window (three at a time).
+  const heroProducts = products
+    .filter((p) => p.images?.[0])
+    .slice(0, 9)
+    .map((p) => ({ id: p.id, slug: p.slug, name: p.name, price: p.price, unit: p.unit, image: p.images[0] }));
 
   // Slides: the hero photo from Site Content first, then the gallery photos marked for the slider
   // (or, until any are marked, the latest ones). No duplicates, at most six.
