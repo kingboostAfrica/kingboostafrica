@@ -147,6 +147,15 @@ async function loadFarmUpdates(): Promise<FarmUpdate[]> {
   }
 }
 
+// What you will find in each part, shown as small tags on the home page cards.
+const VERTICAL_TAGS: Record<string, string[]> = {
+  "food-mart": ["Staples and grains", "Oils and powders", "Delivery or pickup"],
+  academy: ["Short courses", "Practical training", "Learn at your pace"],
+  consulting: ["Farm planning", "Business advice", "One-to-one support"],
+  agritech: ["Farm tools", "Smart farming", "Modern methods"],
+  organics: ["Natural inputs", "Soil care", "Farm solutions"],
+};
+
 export default async function Home() {
   const supabase = createPublicClient();
   const [
@@ -353,6 +362,14 @@ export default async function Home() {
                   </span>
                   <h3 className="mt-8 text-3xl font-bold">{v.title}</h3>
                   <p className="mt-3 max-w-xs text-white/75">{v.body}</p>
+                  <ul className="mt-6 space-y-2 text-sm text-white/85">
+                    {(VERTICAL_TAGS[foodMart.slug] ?? []).map((t) => (
+                      <li key={t} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-kb-gold" aria-hidden="true" />
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <span className="relative mt-12 inline-flex items-center gap-2 font-semibold text-kb-gold">
                   Shop now
@@ -368,13 +385,20 @@ export default async function Home() {
               <Link
                 key={o.slug}
                 href={`/${o.slug}`}
-                className="card group flex flex-col p-7 lg:col-span-1"
+                className="card group flex flex-col p-8 lg:col-span-1"
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-kb-mist text-kb-green">
                   <o.icon size={24} aria-hidden="true" />
                 </span>
                 <h3 className="mt-5 text-xl font-bold text-kb-forest">{v.title}</h3>
-                <p className="mt-2 flex-1 text-kb-charcoal/70">{v.body}</p>
+                <p className="mt-2 text-kb-charcoal/70">{v.body}</p>
+                <ul className="mt-4 flex flex-1 flex-wrap content-start gap-2">
+                  {(VERTICAL_TAGS[o.slug] ?? []).map((t) => (
+                    <li key={t} className="rounded-full bg-kb-mist px-3 py-1 text-xs font-medium text-kb-forest">
+                      {t}
+                    </li>
+                  ))}
+                </ul>
                 <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-kb-green">
                   Learn more
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
